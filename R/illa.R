@@ -1,64 +1,74 @@
-library(tidyverse)
-
+#' Estimate value vs. time curve from longitudinal data.
+#'
+#' @param df A tibble with the following columns: subid, age, val
+#' @param dt Time difference between queries
+#' @param val0 Anchor value
+#' @param maxi Maximum number of iterations
+#' @param skern Span of the smoothing kernel
+#'
+#' @return A list containing two tibbles
+#' @importFrom dplyr %>%
+#' @importFrom purrr map_dbl
+#' @importFrom rlang .data
+#' @export
 illa <- function(df, dt, val0, maxi, skern) {
-  # df should be a tibble with the following columns: subid, age, val
   t <- df %>%
-    arrange(subid, age) %>%
-    group_nest(subid) %>%
-    mutate(
-      min = map_dbl(data, ~ min(.x$val)),
-      max = map_dbl(data, ~ max(.x$val)),
-      val = map_dbl(data, ~ first(.x$val)),
-      nvis = map_dbl(data, ~ nrow(.x)),
-      mrate = map_dbl(data, ~ coef(lm(val ~ age, data = .x))[["age"]])
+    dplyr::arrange(.data$subid, .data$age) %>%
+    dplyr::group_nest(.data$subid, .key = "data") %>%
+    dplyr::mutate(
+      min = map_dbl(.data$data, ~ min(.x$val)),
+      max = map_dbl(.data$data, ~ max(.x$val)),
+      val = map_dbl(.data$data, ~ dplyr::first(.x$val)),
+      nvis = map_dbl(.data$data, ~ nrow(.x)),
+      mrate = map_dbl(.data$data, ~ coef(lm(val ~ age, data = .x))[["age"]])
     ) %>%
-    select(-data)
+    dplyr::select(-.data$data)
 
   tmod <- t %>%
-    filter(.data$nvis > 1 & .data$mrate < 100)
+    dplyr::filter(.data$nvis > 1 & .data$mrate < 100)
   qval <- seq(
     from = min(tmod$val),
     to = max(tmod$val),
     length.out = 151
   )
 
-  tdrs <- tibble(
+  tdrs <- dplyr::tibble(
     val = qval,
     skern = skern
   ) %>%
-    rowwise() %>%
-    mutate(
+    dplyr::rowwise() %>%
+    dplyr::mutate(
       ids = list((tmod$min < .data$val) & (tmod$max > .data$val)),
       tot = sum(ids),
       rates = list(tmod$mrate[ids]),
       vals = list(rep(.data$val, .data$tot)),
-      rate = weighted.mean(rates, tmod$nvis[ids]),
-      ratestd = sd(rates),
+      rate = stats::weighted.mean(rates, tmod$nvis[ids]),
+      ratestd = stats::sd(rates),
       npos = sum(rates > 0),
       ci = 1.96 * .data$ratestd / sqrt(.data$tot)
     ) %>%
-    select(-ids)
+    dplyr::select(-ids)
 
   rates <- unlist(tdrs$rates)
   vals <- unlist(tdrs$vals)
 
   tdrs <- tdrs %>%
-    select(-rates, -vals) %>%
-    filter(.data$tot >= 2)
+    dplyr::select(-rates, -vals) %>%
+    dplyr::filter(.data$tot >= 2)
 
   if (skern > 0) {
-    fit <- loess(rates ~ vals, span = skern)
-    srate <- predict(fit)
+    fit <- stats::loess(rates ~ vals, span = skern)
+    srate <- stats::predict(fit)
     ids <- !duplicated(vals)
     vals <- unique(vals)
     srate <- srate[ids]
     tdrs$rate <- srate[match(tdrs$val, vals)] # check this
   }
 
-  med_rate <- median(tdrs$rate)
+  med_rate <- stats::median(tdrs$rate)
 
   # Perform iterative model
-  # set inital conditions
+  # set initial conditions
   # use iterative process to go forward and backward through discretely
   # sampled rate data
 
@@ -113,14 +123,14 @@ illa <- function(df, dt, val0, maxi, skern) {
   }
   tb <- -seq(0, by = dt, length.out = nib)
 
-  tout <- tibble(
+  tout <- dplyr::tibble(
     val = c(rev(valb[-1]), valf),
     time = c(rev(tb[-1]), tf),
     mrate = c(rev(rb[-1]), rf),
     sdrate = c(rev(sdb[-1]), sdf),
     nsubs = c(rev(nb[-1]), nf)
   ) %>%
-    mutate(
+    dplyr::mutate(
       sdval = sqrt(
         (.data$mrate * dt * .data$sdrate / .data$mrate)^2 + (.05 * .data$val)^2
       ),
