@@ -1,0 +1,18 @@
+repos:
+- repo: https://github.com/lorenzwalthert/precommit
+  rev: v0.4.2
+  hooks:
+  - id: style-files
+  - id: lintr
+    args: [--warn_only]
+  - id: readme-rmd-rendered
+  - id: parsable-R
+  - id: no-browser-statement
+  - id: no-debug-statement
+  - id: roxygenize
+    additional_dependencies:
+    - markdown
+    - dplyr
+    - tibble
+  - id: deps-in-desc
+  - id: use-tidy-description
