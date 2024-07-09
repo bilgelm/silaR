@@ -2,7 +2,7 @@
 % Please edit documentation in R/illa.R
 \name{illa}
 \alias{illa}
-\title{Estimate value vs. time curve from longitudinal data.}
+\title{Estimate value vs. time curve from longitudinal data}
 \usage{
 illa(df, dt, val0, maxi, skern)
 }
@@ -21,5 +21,24 @@ illa(df, dt, val0, maxi, skern)
 A list containing two tibbles
 }
 \description{
-Estimate value vs. time curve from longitudinal data.
+Estimate value vs. time curve from longitudinal data
+}
+\examples{
+set.seed(42)
+df <- tibble::tibble(
+  subid = c(
+    1, 1, 1,
+    2, 2, 2, 2, 2, 2
+  ),
+  age = c(
+    seq(from = 50, to = 70, length.out = 3),
+    seq(from = 50, to = 70, length.out = 6)
+  ),
+  val = c(
+    2, 4, 6,
+    2, 4, 6, 8, 10, 12
+  ) + stats::rnorm(3 + 6, mean = 0, sd = .1)
+)
+illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
+illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0.2)
 }
