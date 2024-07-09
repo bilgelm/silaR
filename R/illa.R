@@ -38,7 +38,6 @@ illa <- function(df, dt, val0, maxi, skern) {
     dplyr::mutate(
       min = map_dbl(.data$data, ~ min(.x$val)),
       max = map_dbl(.data$data, ~ max(.x$val)),
-      val = map_dbl(.data$data, ~ dplyr::first(.x$val)),
       nvis = map_dbl(.data$data, ~ nrow(.x)),
       lmfit = purrr::map(.data$data, ~ stats::lm(val ~ age, data = .x)),
       mrate = map_dbl(.data$lmfit, ~ stats::coef(.x)[["age"]]),
@@ -53,7 +52,8 @@ illa <- function(df, dt, val0, maxi, skern) {
   # TODO: this should be abs(mrate); need warnings that there are steep changes
 
   n_qval <- 150 # TODO: number of query values should be a function parameter
-  # TODO: can query values be specified as unique(t$val) or a subset thereof?
+  # TODO: can query values be specified as
+  # unique(c(t$min, t$max)) or a subset thereof?
 
   qval <- seq(
     from = min(df$val),
@@ -72,7 +72,7 @@ illa <- function(df, dt, val0, maxi, skern) {
       tot = sum(.data$ids),
       rates = list(tmod$mrate[.data$ids]),
       vals = list(rep(.data$val, .data$tot)),
-      # TODO: weighting should use SE of each rate estimate
+      # TODO: should weighting use SE of each rate estimate instead of nvis?
       rate = stats::weighted.mean(rates, tmod$nvis[.data$ids]),
       ratestd = stats::sd(.data$rates), # TODO: sd should also be weighted
       npos = sum(.data$rates > 0),

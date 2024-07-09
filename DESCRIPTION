@@ -3,11 +3,14 @@ Title: Sampled Iterative Local Approximation
 Version: 0.0.0.9000
 Authors@R: c(
     person("Murat", "Bilgel", email = "murat.bilgel@nih.gov",
-           role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0001-5042-7422")),
+           role = c("aut", "trl", "cre"),
+           comment = c("R port", ORCID = "0000-0001-5042-7422")),
     person(c("Tobey", "J."), "Betthauser",
            email = "tjbetthauser@medicine.wisc.edu",
-           role = "aut", comment = c(ORCID = "0000-0001-8856-1352")))
+           role = "aut",
+           comment = c(
+              "MATLAB original, <https://github.com/Betthauser-Neuro-Lab/SILA-AD-Biomarker>",
+              ORCID = "0000-0001-8856-1352")))
 Description: Model longitudinal data and estimate onset age.
 License: GPL (>= 3)
 Encoding: UTF-8
@@ -20,3 +23,5 @@ Imports:
     stats,
     tibble,
     utils
+URL: https://github.com/bilgelm/silaR
+BugReports: https://github.com/bilgelm/silaR/issues
