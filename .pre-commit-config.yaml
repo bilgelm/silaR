@@ -16,3 +16,8 @@ repos:
     - tibble
   - id: deps-in-desc
   - id: use-tidy-description
+- repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+  rev: v9.16.0
+  hooks:
+      - id: commitlint
+        stages: [commit-msg]
