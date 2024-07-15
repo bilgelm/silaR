@@ -180,5 +180,9 @@ illa <- function(df, dt, val0, maxi, skern) {
   id0 <- which.min(abs(tout$val - val0))
   tout$adtime <- tout$time - tout$time[id0]
 
-  list(tout = tout, tdrs = tdrs)
+  list(
+    tout = tout %>% dplyr::relocate(.data$adtime, .after = .data$time),
+    tdrs = tdrs %>%
+      dplyr::select(val, rate, ratestd, npos, tot, ci, skern)
+  )
 }

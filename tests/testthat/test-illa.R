@@ -1,5 +1,4 @@
 test_that("ILLA without smoothing runs without error", {
-  set.seed(42)
   df <- tibble::tibble(
     subid = c(
       1, 1, 1,
@@ -10,12 +9,12 @@ test_that("ILLA without smoothing runs without error", {
       seq(from = 50, to = 70, length.out = 6)
     ),
     val = c(
-      2, 4, 6,
-      2, 4, 6, 8, 10, 12
-    ) + stats::rnorm(3 + 6, mean = 0, sd = .1)
+      2.14, 3.94, 6.04,
+      2.06, 4.04, 5.99, 8.15, 9.99, 12.2
+    )
   )
 
   expect_no_error(
-    illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
+    res <- illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
   )
 })
