@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/bilgelm/silaR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/bilgelm/silaR/actions/workflows/R-CMD-check.yaml)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/bilgelm/silaR/main.svg)](https://results.pre-commit.ci/latest/github/bilgelm/silaR/main)
 <!-- badges: end -->
 
 silaR is an R implementation of Sampled Iterative Local Approximation (SILA).
@@ -91,8 +92,7 @@ ggplot(res$tout, aes(x = adtime, y = val)) +
 This repo follows the
 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) 
 specification for commit messages.
-
 Pre-commit will automatically check your commit message and fail your commit
 if your commit message doesn't conform to the specification.
-If you don't set up pre-commit as in this repo or skip it,
+If you don't set up pre-commit or skip it,
 a CI job will check it for you when you make a pull request.
