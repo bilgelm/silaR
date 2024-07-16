@@ -17,4 +17,11 @@ test_that("ILLA without smoothing runs without error", {
   expect_no_error(
     res <- illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
   )
+
+  skip_if(
+    !testthat:::on_ci(),
+    "Skipping writing csv outputs when not on CI"
+  )
+  readr::write_csv(res$tout, "test_illa_r_tout_skern0.csv")
+  readr::write_csv(res$tdrs, "test_illa_r_tdrs_skern0.csv")
 })

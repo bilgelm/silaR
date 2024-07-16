@@ -1,0 +1,3 @@
+[submodule "SILA-AD-Biomarker"]
+	path = SILA-AD-Biomarker
+	url = https://github.com/Betthauser-Neuro-Lab/SILA-AD-Biomarker.git

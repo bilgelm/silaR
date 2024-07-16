@@ -26,5 +26,6 @@ Imports:
 URL: https://github.com/bilgelm/silaR
 BugReports: https://github.com/bilgelm/silaR/issues
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    readr
 Config/testthat/edition: 3
