@@ -11,5 +11,7 @@ dt = 2;
 val0 = 2;
 maxi = 100;
 [tout,tdrs] = ILLA(age,value,subid,dt,val0,maxi,0);
+tout.Variables = round(tout.Variables,3);
+tdrs.Variables = round(tdrs.Variables,3);
 writetable(tout, "test_illa_matlab_tout_skern0.csv")
 writetable(tdrs, "test_illa_matlab_tdrs_skern0.csv")

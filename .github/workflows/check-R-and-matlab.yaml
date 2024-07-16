@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main, master]
 
-name: R-CMD-check
+name: check-R-and-matlab
 
 permissions: read-all
 
@@ -51,3 +51,42 @@ jobs:
           upload-snapshots: true
           upload-results: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+
+  matlab-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+            submodules: true
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          products: >
+            Statistics_and_Machine_Learning_Toolbox
+            Curve_Fitting_Toolbox
+
+      - name: Run demo script
+        uses: matlab-actions/run-command@v2
+        with:
+          command: cd tests/testthat; test_illa
+
+      - name: Save results
+        uses: actions/upload-artifact@v4
+        with:
+          name: matlab-results
+          path: tests/testthat/test_illa_matlab_*.csv
+
+  compare-r-and-matlab:
+    needs: [R-CMD-check, matlab-check]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+      - shell: bash
+        run: |
+          diff matlab-results/test_illa_matlab_tout_skern0.csv Linux-X64-rrelease-*-results/silaR.Rcheck/tests/testtthat/test_illa_r_tout_skern0.csv
+          diff matlab-results/test_illa_matlab_tdrs_skern0.csv Linux-X64-rrelease-*-results/silaR.Rcheck/tests/testtthat/test_illa_r_tdrs_skern0.csv

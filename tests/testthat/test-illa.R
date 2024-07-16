@@ -22,6 +22,18 @@ test_that("ILLA without smoothing runs without error", {
     !testthat:::on_ci(),
     "Skipping writing csv outputs when not on CI"
   )
-  readr::write_csv(res$tout, "test_illa_r_tout_skern0.csv")
-  readr::write_csv(res$tdrs, "test_illa_r_tdrs_skern0.csv")
+  readr::write_csv(
+    res$tout %>%
+      dplyr::mutate(
+        dplyr::across(dplyr::everything(), ~ round(.x, 3))
+      ),
+    "test_illa_r_tout_skern0.csv"
+  )
+  readr::write_csv(
+    res$tdrs %>%
+      dplyr::mutate(
+        dplyr::across(dplyr::everything(), ~ round(.x, 3))
+      ),
+    "test_illa_r_tdrs_skern0.csv"
+  )
 })
