@@ -5,7 +5,7 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/bilgelm/silaR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/bilgelm/silaR/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/bilgelm/silaR/actions/workflows/check-R-and-matlab.yaml/badge.svg)](https://github.com/bilgelm/silaR/actions/workflows/check-R-and-matlab.yaml)
 [![pre-commit.ci
 status](https://results.pre-commit.ci/badge/github/bilgelm/silaR/main.svg)](https://results.pre-commit.ci/latest/github/bilgelm/silaR/main)
 <!-- badges: end -->
