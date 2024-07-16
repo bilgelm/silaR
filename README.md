@@ -61,9 +61,9 @@ ggplot(df, aes(x = age, y = val, group = subid)) +
   geom_line() +
   xlim(c(50, 70)) +
   ylim(c(2, 13)) +
-  xlab("Biomarker value") +
-  ylab("Age (years)") +
-  theme_bw()
+  xlab("Age (years)") +
+  ylab("Biomarker value") +
+  theme_bw(base_size = 20)
 ```
 
 <div class="figure">
@@ -82,9 +82,9 @@ ggplot(res$tout, aes(x = adtime, y = val)) +
   geom_line() +
   xlim(c(0, 20)) +
   ylim(c(2, 13)) +
-  xlab("Biomarker value") +
-  ylab("Adjusted time (years)") +
-  theme_bw()
+  xlab("Adjusted time (years)") +
+  ylab("Biomarker value") +
+  theme_bw(base_size = 20)
 ```
 
 <div class="figure">
@@ -106,5 +106,4 @@ This repo follows the [Conventional
 Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary)
 specification for commit messages. Pre-commit will automatically check
 your commit message and fail your commit if your commit message doesn’t
-conform to the specification. If you don’t set up pre-commit or skip it,
-a CI job will check it for you when you make a pull request.
+conform to the specification.
