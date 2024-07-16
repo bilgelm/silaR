@@ -9,7 +9,6 @@
 #' @return A list containing two tibbles
 #' @importFrom dplyr %>%
 #' @importFrom purrr map_dbl
-#' @importFrom rlang .data
 #' @importFrom tibble tibble
 #' @export
 #'
@@ -33,22 +32,22 @@
 #' illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0.2)
 illa <- function(df, dt, val0, maxi, skern) {
   t <- df %>%
-    dplyr::arrange(.data$subid, .data$age) %>%
-    dplyr::group_nest(.data$subid, .key = "data") %>%
+    dplyr::arrange(subid, age) %>%
+    dplyr::group_nest(subid, .key = "data") %>%
     dplyr::mutate(
-      min = map_dbl(.data$data, ~ min(.x$val)),
-      max = map_dbl(.data$data, ~ max(.x$val)),
-      nvis = map_dbl(.data$data, ~ nrow(.x)),
-      lmfit = purrr::map(.data$data, ~ stats::lm(val ~ age, data = .x)),
-      mrate = map_dbl(.data$lmfit, ~ stats::coef(.x)[["age"]]),
+      min = map_dbl(data, ~ min(.x$val)),
+      max = map_dbl(data, ~ max(.x$val)),
+      nvis = map_dbl(data, ~ nrow(.x)),
+      lmfit = purrr::map(data, ~ stats::lm(val ~ age, data = .x)),
+      mrate = map_dbl(lmfit, ~ stats::coef(.x)[["age"]]),
       mrate_se = map_dbl(
-        .data$lmfit, ~ summary(.x)$coefficients["age", "Std. Error"]
+        lmfit, ~ summary(.x)$coefficients["age", "Std. Error"]
       )
     ) %>%
-    dplyr::select(-.data$data)
+    dplyr::select(-data)
 
   tmod <- t %>%
-    dplyr::filter(.data$nvis > 1 & .data$mrate < 100)
+    dplyr::filter(nvis > 1 & mrate < 100)
   # TODO: this should be abs(mrate); need warnings that there are steep changes
 
   n_qval <- 150 # TODO: number of query values should be a function parameter
@@ -68,24 +67,24 @@ illa <- function(df, dt, val0, maxi, skern) {
     dplyr::rowwise() %>%
     dplyr::mutate(
       # TODO: should comparisons include = ?
-      ids = list((tmod$min < .data$val) & (tmod$max > .data$val)),
-      tot = sum(.data$ids),
-      rates = list(tmod$mrate[.data$ids]),
-      vals = list(rep(.data$val, .data$tot)),
+      ids = list((tmod$min < val) & (tmod$max > val)),
+      tot = sum(ids),
+      rates = list(tmod$mrate[ids]),
+      vals = list(rep(val, tot)),
       # TODO: should weighting use SE of each rate estimate instead of nvis?
-      rate = stats::weighted.mean(rates, tmod$nvis[.data$ids]),
-      ratestd = stats::sd(.data$rates), # TODO: sd should also be weighted
-      npos = sum(.data$rates > 0),
-      ci = 1.96 * .data$ratestd / sqrt(.data$tot)
+      rate = stats::weighted.mean(rates, tmod$nvis[ids]),
+      ratestd = stats::sd(rates), # TODO: sd should also be weighted
+      npos = sum(rates > 0),
+      ci = 1.96 * ratestd / sqrt(tot)
     ) %>%
-    dplyr::select(-.data$ids)
+    dplyr::select(-ids)
 
   rates <- unlist(tdrs$rates)
   vals <- unlist(tdrs$vals)
 
   tdrs <- tdrs %>%
-    dplyr::select(-.data$rates, -.data$vals) %>%
-    dplyr::filter(.data$tot >= 2)
+    dplyr::select(-rates, -vals) %>%
+    dplyr::filter(tot >= 2)
 
   if (skern > 0) {
     fit <- stats::loess(rates ~ vals,
@@ -94,7 +93,7 @@ illa <- function(df, dt, val0, maxi, skern) {
       control = stats::loess.control(iterations = 5)
     )
     tdrs <- tdrs %>%
-      dplyr::select(-.data$rate) %>%
+      dplyr::select(-rate) %>%
       dplyr::left_join(
         tibble(val = vals, rate = stats::predict(fit)) %>%
           dplyr::distinct()
@@ -173,15 +172,15 @@ illa <- function(df, dt, val0, maxi, skern) {
   ) %>%
     dplyr::mutate(
       sdval = sqrt(
-        (.data$mrate * dt * .data$sdrate / .data$mrate)^2 + (.05 * .data$val)^2
+        (mrate * dt * sdrate / mrate)^2 + (.05 * val)^2
       ),
-      ci95 = 1.96 * .data$sdval / sqrt(.data$nsubs)
+      ci95 = 1.96 * sdval / sqrt(nsubs)
     )
   id0 <- which.min(abs(tout$val - val0))
   tout$adtime <- tout$time - tout$time[id0]
 
   list(
-    tout = tout %>% dplyr::relocate(.data$adtime, .after = .data$time),
+    tout = tout %>% dplyr::relocate(adtime, .after = time),
     tdrs = tdrs %>%
       dplyr::select(val, rate, ratestd, npos, tot, ci, skern)
   )
