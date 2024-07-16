@@ -51,8 +51,3 @@ jobs:
           upload-snapshots: true
           upload-results: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
-
-      - name: Save results
-        uses: actions/upload-artifact@v4
-        with:
-          path: tests/testthat/test_illa_r_*.csv
