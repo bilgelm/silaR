@@ -88,7 +88,5 @@ jobs:
       - uses: actions/download-artifact@v4
       - shell: bash
         run: |
-          pwd
-          ls -R
           diff matlab-results/test_illa_matlab_tout_skern0.csv Linux-X64-rrelease-*-results/silaR.Rcheck/tests/testthat/test_illa_r_tout_skern0.csv
           diff matlab-results/test_illa_matlab_tdrs_skern0.csv Linux-X64-rrelease-*-results/silaR.Rcheck/tests/testthat/test_illa_r_tdrs_skern0.csv
