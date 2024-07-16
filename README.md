@@ -93,3 +93,18 @@ Figure 2. Estimated biomarker data as a function of aligned time.
 </p>
 
 </div>
+
+## Development
+
+### Style
+
+#### Git
+
+This repo follows the [Conventional
+Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary)
+specification for commit messages.
+
+Pre-commit will automatically check your commit message and fail your
+commit if your commit message doesn’t conform to the specification. If
+you don’t set up pre-commit as in this repo or skip it, a CI job will
+check it for you when you make a pull request.
