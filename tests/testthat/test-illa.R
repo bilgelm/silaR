@@ -18,22 +18,35 @@ test_that("ILLA without smoothing runs without error", {
     res <- illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
   )
 
-  skip_if(
-    !testthat:::on_ci(),
-    "Skipping writing csv outputs when not on CI"
+  need_to_cleanup_matlab <- FALSE
+  if (!testthat:::on_ci()) {
+    # if not on CI, run the Matlab test
+    matlab_cmd <- paste(
+      "source ~/.zshrc;", # TODO: need a better solution here
+      "matlab -nodisplay -nosplash -nodesktop -r",
+      '"run(\'test_illa.m\'); exit;"'
+    )
+    system(matlab_cmd)
+    need_to_cleanup_matlab <- TRUE
+
+    matlab_res_dir <- "."
+  } else {
+    matlab_res_dir <- "matlab-results"
+  }
+
+  # compare R output to MATLAB output
+  tout <- readr::read_csv(
+    file.path(matlab_res_dir, "test_illa_matlab_tout_skern0.csv")
   )
-  readr::write_csv(
-    res$tout %>%
-      dplyr::mutate(
-        dplyr::across(dplyr::everything(), ~ round(.x, 3))
-      ),
-    "test_illa_r_tout_skern0.csv"
+  expect_equal(res$tout, tout)
+
+  tdrs <- readr::read_csv(
+    file.path(matlab_res_dir, "test_illa_matlab_tdrs_skern0.csv")
   )
-  readr::write_csv(
-    res$tdrs %>%
-      dplyr::mutate(
-        dplyr::across(dplyr::everything(), ~ round(.x, 3))
-      ),
-    "test_illa_r_tdrs_skern0.csv"
-  )
+  expect_equal(res$tdrs, tdrs)
+
+  if (need_to_cleanup_matlab) {
+    # remove matlab output files
+    system("rm test_illa_matlab_t*.csv")
+  }
 })

@@ -77,7 +77,8 @@ illa <- function(df, dt, val0, maxi, skern) {
       npos = sum(rates > 0),
       ci = 1.96 * ratestd / sqrt(tot)
     ) %>%
-    dplyr::select(-ids)
+    dplyr::select(-ids) %>%
+    dplyr::ungroup()
 
   rates <- unlist(tdrs$rates)
   vals <- unlist(tdrs$vals)
