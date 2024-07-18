@@ -31,7 +31,7 @@ test_that("ILLA without smoothing runs without error", {
 
     matlab_res_dir <- "."
   } else {
-    matlab_res_dir <- "matlab-results"
+    matlab_res_dir <- "/home/runner/work/silaR/silaR/matlab-results"
   }
 
   # compare R output to MATLAB output
