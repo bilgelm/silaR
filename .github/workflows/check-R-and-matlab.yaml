@@ -27,16 +27,27 @@ jobs:
             Statistics_and_Machine_Learning_Toolbox
             Curve_Fitting_Toolbox
 
-      - name: Run demo script
+      - name: Run ILLA tests
         uses: matlab-actions/run-command@v2
         with:
           command: cd tests/testthat; test_illa
 
-      - name: Save results
+      - name: Run SILA estimate tests
+        uses: matlab-actions/run-command@v2
+        with:
+          command: cd tests/testthat; test_sila_estimate
+
+      - name: Save ILLA test results
         uses: actions/upload-artifact@v4
         with:
           name: matlab-results
           path: tests/testthat/test_illa_matlab_*.csv
+
+      - name: Save SILA estimate test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: matlab-results
+          path: tests/testthat/test_sila_estimate_matlab_aevent_*.csv
 
   R-CMD-check:
     needs: matlab-check

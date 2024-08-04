@@ -21,6 +21,7 @@ Imports:
     purrr,
     stats,
     tibble,
+    tidyr,
     utils
 URL: https://github.com/bilgelm/silaR
 BugReports: https://github.com/bilgelm/silaR/issues
