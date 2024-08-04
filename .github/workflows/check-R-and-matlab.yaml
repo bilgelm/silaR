@@ -37,17 +37,11 @@ jobs:
         with:
           command: cd tests/testthat; test_sila_estimate
 
-      - name: Save ILLA test results
+      - name: Save matlab test results
         uses: actions/upload-artifact@v4
         with:
           name: matlab-results
-          path: tests/testthat/test_illa_matlab_*.csv
-
-      - name: Save SILA estimate test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: matlab-results
-          path: tests/testthat/test_sila_estimate_matlab_aevent_*.csv
+          path: tests/testthat/test_*_matlab_*.csv
 
   R-CMD-check:
     needs: matlab-check
