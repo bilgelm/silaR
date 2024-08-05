@@ -36,6 +36,27 @@
 #' @importFrom dplyr %>%
 #' @importFrom tidyr nest unnest
 #' @export
+#'
+#' @examples
+#' set.seed(42)
+#' df <- tibble::tibble(
+#'   subid = c(
+#'     1, 1, 1,
+#'     2, 2, 2, 2, 2, 2
+#'   ),
+#'   age = c(
+#'     seq(from = 50, to = 70, length.out = 3),
+#'     seq(from = 50, to = 70, length.out = 6)
+#'   ),
+#'   val = c(
+#'     2, 4, 6,
+#'     2, 4, 6, 8, 10, 12
+#'   ) + stats::rnorm(3 + 6, mean = 0, sd = .1)
+#' )
+#' illa_res <- illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
+#' sila_estimate(illa_res$tout, df)
+#' sila_estimate(illa_res$tout, df, align_event = "first")
+#' sila_estimate(illa_res$tout, df, align_event = "all")
 sila_estimate <- function(
     tsila, df, align_event = "last", extrap_years = 3, truncate_aget0 = TRUE) {
   # Create extrapolated model
