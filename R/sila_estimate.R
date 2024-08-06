@@ -145,12 +145,13 @@ sila_estimate <- function(
         estaget0 = estaget0 - max(0, dtshift),
         estdtt0 = estdtt0 + max(0, dtshift)
       ) %>%
-      dplyr::ungroup()
+      dplyr::ungroup() %>%
+      dplyr::select(-dtshift)
   } else {
     tout$realigned <- 0
   }
 
   tout %>%
-    dplyr::select(-nvis, -chronref, -dtshift) %>%
+    dplyr::select(-nvis, -chronref) %>%
     dplyr::relocate(estdtt0, .after = estaget0)
 }
