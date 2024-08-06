@@ -33,5 +33,3 @@ Config/testthat/edition: 3
 Depends: 
     R (>= 2.10)
 LazyData: true
-Remotes:  
-    r-lib/usethis

@@ -9,13 +9,6 @@ repos:
   - id: parsable-R
   - id: no-browser-statement
   - id: no-debug-statement
-  - id: roxygenize
-    additional_dependencies:
-    - markdown
-    - dplyr
-    - tibble
-    - tidyr
-    - usethis
   - id: deps-in-desc
     args: [--allow_private_imports]
   - id: use-tidy-description

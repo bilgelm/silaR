@@ -97,7 +97,8 @@ illa <- function(df, dt, val0, maxi, skern) {
       dplyr::select(-rate) %>%
       dplyr::left_join(
         tibble(val = vals, rate = stats::predict(fit)) %>%
-          dplyr::distinct()
+          dplyr::distinct(),
+        by = dplyr::join_by(val)
       )
     # TODO: ratestd and ci should also be updated
   }
