@@ -13,6 +13,13 @@ status](https://results.pre-commit.ci/badge/github/bilgelm/silaR/main.svg)](http
 silaR is an R implementation of Sampled Iterative Local Approximation
 (SILA).
 
+[SILA](https://github.com/Betthauser-Neuro-Lab/SILA-AD-Biomarker) was
+developed in Matlab by Dr. Betthauser at the University of
+Wisconsin-Madison to model longitudinal amyloid PET data and estimate
+individual A+ onset age. This algorithm may have applications in other
+areas where long-term population trajectories can be surmised from
+shorter longitudinal assessments of individuals.
+
 ## Installation
 
 You can install the development version of silaR from
@@ -161,3 +168,27 @@ Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary)
 specification for commit messages. Pre-commit will automatically check
 your commit message and fail your commit if your commit message doesn’t
 conform to the specification.
+
+## Citation
+
+    To cite package 'silaR' in publications use:
+
+      Betthauser TJ, Bilgel M, Koscik RL, Jedynak BM, An Y, Kellett KA,
+      Moghekar A, Jonaitis EM, Stone CK, Engelman CD, Asthana S, Christian
+      BT, Wong DF, Albert M, Resnick SM, Johnson SC (2022). "Multi-method
+      investigation of factors influencing amyloid onset and impairment in
+      three cohorts." _Brain_, *145*(11), 4065-4079.
+      doi:10.1093/brain/awac213 <https://doi.org/10.1093/brain/awac213>.
+
+    A BibTeX entry for LaTeX users is
+
+      @Article{,
+        author = {Tobey J Betthauser and Murat Bilgel and Rebecca L Koscik and Bruno M Jedynak and Yang An and Kristina A Kellett and Abhay Moghekar and Erin M Jonaitis and Charles K Stone and Corinne D Engelman and Sanjay Asthana and Bradley T Christian and Dean F Wong and Marilyn Albert and Susan M Resnick and Sterling C Johnson},
+        title = {Multi-method investigation of factors influencing amyloid onset and impairment in three cohorts},
+        journal = {Brain},
+        year = {2022},
+        volume = {145},
+        number = {11},
+        pages = {4065--4079},
+        doi = {10.1093/brain/awac213},
+      }

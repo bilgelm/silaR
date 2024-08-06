@@ -27,6 +27,13 @@ knitr::opts_chunk$set(
 
 silaR is an R implementation of Sampled Iterative Local Approximation (SILA).
 
+[SILA](https://github.com/Betthauser-Neuro-Lab/SILA-AD-Biomarker)
+was developed in Matlab by Dr. Betthauser at the University of Wisconsin-Madison
+to model longitudinal amyloid PET data and estimate individual A+ onset age.
+This algorithm may have applications in other areas where long-term population
+trajectories can be surmised from shorter longitudinal assessments of
+individuals.
+
 ## Installation
 
 You can install the development version of silaR from [GitHub](https://github.com/) with:
@@ -166,3 +173,9 @@ This repo follows the
 specification for commit messages.
 Pre-commit will automatically check your commit message and fail your commit
 if your commit message doesn't conform to the specification.
+
+## Citation
+
+```{r citation, echo=FALSE, comment=""}
+citation("silaR")
+```
