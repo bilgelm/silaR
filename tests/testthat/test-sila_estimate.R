@@ -24,10 +24,6 @@ test_that("SILA estimate runs without error", {
     res_firstalign <- sila_estimate(illa_res$tout, df, align_event = "first")
   )
 
-  expect_no_error(
-    res_allalign <- sila_estimate(illa_res$tout, df, align_event = "all")
-  )
-
   need_to_cleanup_matlab <- FALSE
   if (!testthat:::on_ci()) {
     # if not on CI, run the Matlab test

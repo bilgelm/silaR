@@ -21,7 +21,7 @@ function}
 
 \item{align_event}{Which observation(s) to use within a subject to estimate
 subject-level age of onset and duration of positivity.
-Can be "first", "last" (default), or "all".}
+Can be "first" or "last" (default).}
 
 \item{extrap_years}{Data within extrap_years is used to extrapolate SILA
 estimates when observations fall beyond the modeled
@@ -75,5 +75,4 @@ df <- tibble::tibble(
 illa_res <- illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
 sila_estimate(illa_res$tout, df)
 sila_estimate(illa_res$tout, df, align_event = "first")
-sila_estimate(illa_res$tout, df, align_event = "all")
 }

@@ -6,7 +6,7 @@
 #' @param df A tibble with the following columns: subid, age, val
 #' @param align_event Which observation(s) to use within a subject to estimate
 #'                    subject-level age of onset and duration of positivity.
-#'                    Can be "first", "last" (default), or "all".
+#'                    Can be "first" or "last" (default).
 #' @param extrap_years Data within extrap_years is used to extrapolate SILA
 #'                     estimates when observations fall beyond the modeled
 #'                     range. Linear regression is applied to the modeled
@@ -56,7 +56,6 @@
 #' illa_res <- illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
 #' sila_estimate(illa_res$tout, df)
 #' sila_estimate(illa_res$tout, df, align_event = "first")
-#' sila_estimate(illa_res$tout, df, align_event = "all")
 sila_estimate <- function(
     tsila, df, align_event = "last", extrap_years = 3, truncate_aget0 = TRUE) {
   # Create extrapolated model
@@ -74,8 +73,8 @@ sila_estimate <- function(
   rng <- diff(range(df$val))
   minval <- min(df$val) - rng
   maxval <- max(df$val) + rng
-  left_adtime <- stats::predict(md1, newdata = tibble(val = minval))
-  right_adtime <- stats::predict(md2, newdata = tibble(val = maxval))
+  left_adtime <- stats::predict(md2, newdata = tibble(val = minval))
+  right_adtime <- stats::predict(md1, newdata = tibble(val = maxval))
   extended_adtime <- c(left_adtime, tsila$adtime, right_adtime)
   extended_val <- c(minval, tsila$val, maxval)
 
@@ -94,9 +93,9 @@ sila_estimate <- function(
       maxage = max(age),
       valt0 = valt0,
       ageref = dplyr::case_when(
-        align_event == "all" ~ mean(age),
         align_event == "first" ~ minage,
-        align_event == "last" ~ maxage,
+        align_event == "last" ~ maxage
+        # align_event == "all" ~ mean(age)
       ),
       dtageref = age - ageref,
       nvis = dplyr::n()
@@ -108,17 +107,16 @@ sila_estimate <- function(
         data,
         ~ dplyr::case_when(
           align_event == "first" ~ val_to_adtime(dplyr::first(.x$val)),
-          align_event == "last" ~ val_to_adtime(dplyr::last(.x$val)),
-          align_event == "all" ~ stats::coef(
-            stats::nls(
-              val ~ adtime_to_val(age + shift),
-              data = .x,
-              start = list(
-                shift = val_to_adtime(mean(.x$val)) - mean(.x$age)
-              )
-            )
-          )["shift"] + .x$ageref[1],
-          TRUE ~ NA_real_
+          align_event == "last" ~ val_to_adtime(dplyr::last(.x$val))
+          # align_event == "all" ~ stats::coef(
+          #   stats::nls(
+          #     val ~ adtime_to_val(age + shift),
+          #     data = .x,
+          #     start = list(
+          #       shift = val_to_adtime(mean(.x$val)) - mean(.x$age)
+          #     )
+          #   )
+          # )["shift"] + .x$ageref[1]
         )
       ),
     ) %>%
