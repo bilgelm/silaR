@@ -37,6 +37,11 @@ jobs:
         with:
           command: cd tests/testthat; test_sila_estimate
 
+      - name: Run SILA test
+        uses: matlab-actions/run-command@v2
+        with:
+          command: cd tests/testthat; test_sila
+
       - name: Save matlab test results
         uses: actions/upload-artifact@v4
         with:
@@ -79,7 +84,7 @@ jobs:
         with:
           extra-packages: any::rcmdcheck
           needs: check
-      
+
       - uses: actions/download-artifact@v4
 
       - uses: r-lib/actions/check-r-package@v2
