@@ -4,12 +4,7 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r libraries, include = FALSE}
-library(silaR)
-
-library(dplyr)
-library(ggplot2)
-
+```{r knitr, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -27,8 +22,9 @@ knitr::opts_chunk$set(
 
 silaR is an R implementation of Sampled Iterative Local Approximation (SILA).
 
-[SILA](https://github.com/Betthauser-Neuro-Lab/SILA-AD-Biomarker)
-was developed in Matlab by Dr. Betthauser at the University of Wisconsin-Madison
+The original
+[Matlab implementation of SILA](https://github.com/Betthauser-Neuro-Lab/SILA-AD-Biomarker)
+was developed by Dr. Tobey Betthauser at the University of Wisconsin-Madison
 to model longitudinal amyloid PET data and estimate individual A+ onset age.
 This algorithm may have applications in other areas where long-term population
 trajectories can be surmised from shorter longitudinal assessments of
@@ -49,6 +45,8 @@ We illustrate how to run SILA in a simulated dataset, and then how to localize
 each subject on the estimated trajectory.
 
 ```{r demo, message=FALSE, warning=FALSE}
+library(silaR)
+
 # Train the SILA model
 df <- simulated_longitudinal_data
 res <- sila(df, dt = 0.25, val0 = 21, maxi = 200)
@@ -56,7 +54,10 @@ res <- sila(df, dt = 0.25, val0 = 21, maxi = 200)
 resfit <- sila_estimate(res$tsila, df)
 ```
 
-```{r simdata, out.width="50%"}
+```{r simdata, message=FALSE, warning=FALSE, out.width="50%"}
+library(dplyr)
+library(ggplot2)
+
 # spaghetti plot of value vs. age for simulated data
 ggplot(df, aes(x = age, y = val, group = subid, color = factor(subid))) +
   geom_point() +
@@ -176,6 +177,6 @@ if your commit message doesn't conform to the specification.
 
 ## Citation
 
-```{r citation, echo=FALSE, comment=""}
+```{r citation, results="asis", echo=FALSE, comment=""}
 citation("silaR")
 ```
