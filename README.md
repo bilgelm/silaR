@@ -25,183 +25,130 @@ devtools::install_github("bilgelm/silaR")
 
 ## Example
 
-As a simple example, we illustrate how to run ILLA without smoothing in
-a dataset consisting of two subjects, and then how to localize these two
-subjects on the estimated trajectory.
+We illustrate how to run SILA in a simulated dataset, and then how to
+localize each subject on the estimated trajectory.
 
 ``` r
-library(silaR)
+# Train the SILA model
+df <- simulated_longitudinal_data
+res <- sila(df, dt = 0.25, val0 = 21, maxi = 200)
 
-set.seed(42)
-
-# generate a simple small dataset
-df <- tibble::tibble(
-  subid = c(
-    1, 1, 1,
-    2, 2, 2, 2, 2, 2
-  ),
-  age = c(
-    seq(from = 50, to = 70, length.out = 3),
-    seq(from = 50, to = 70, length.out = 6)
-  ),
-  val = c(
-    2, 4, 6,
-    2, 4, 6, 8, 10, 12
-  ) + stats::rnorm(3 + 6, mean = 0, sd = .1)
-)
-
-# run ILLA without smoothing
-res <- illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
+resfit <- sila_estimate(res$tsila, df)
 ```
 
 ``` r
-library(ggplot2)
-
-df$Subject <- factor(df$subid)
-
-ggplot(df, aes(x = age, y = val, group = Subject, color = Subject)) +
+# spaghetti plot of value vs. age for simulated data
+ggplot(df, aes(x = age, y = val, group = subid, color = factor(subid))) +
   geom_point() +
   geom_line() +
-  xlim(c(50, 70)) +
-  ylim(c(2, 13)) +
+  geom_hline(yintercept = 21, color = "black", linetype = "dashed") +
   xlab("Age (years)") +
-  ylab("Biomarker value") +
-  theme_bw(base_size = 20) +
-  theme(legend.position = "inside", legend.position.inside = c(.15, .8))
+  ylab("Value") +
+  ggtitle("Simulated Input Data") +
+  theme_bw() +
+  theme(legend.position = "none")
 ```
 
-<div class="figure">
-
-<img src="man/figures/README-exampleplot-1.png" alt="Figure 1. Observed longitudinal biomarker data versus age." width="50%" />
-<p class="caption">
-Figure 1. Observed longitudinal biomarker data versus age.
-</p>
-
-</div>
+<img src="man/figures/README-simdata-1.png" width="50%" />
 
 ``` r
+# plots showing the output from discrete rate sampling (i.e., rate vs. value)
+# and modeled value vs. time data.
+ggplot(res$tdrs, aes(x = val, y = rate)) +
+  geom_ribbon(aes(ymin = rate - ci, ymax = rate + ci), alpha = .3) +
+  geom_line() +
+  xlab("Value") +
+  ylab(expression(Delta * "Value per Year")) +
+  ggtitle("Discrete Rate Sampling Curve") +
+  theme_bw()
 
-adtime_lims <- c(-12, 25)
-ggplot(res$tout, aes(x = adtime, y = val)) +
-  geom_line(linewidth = 2, color = "gray", linetype = "dashed") +
-  xlim(adtime_lims) +
-  ylim(c(2, 13)) +
-  xlab("Adjusted time (years)") +
-  ylab("Biomarker value") +
-  theme_bw(base_size = 20)
-```
-
-<div class="figure">
-
-<img src="man/figures/README-exampleplot-2.png" alt="Figure 2. Estimated biomarker data as a function of aligned time." width="50%" />
-<p class="caption">
-Figure 2. Estimated biomarker data as a function of aligned time.
-</p>
-
-</div>
-
-We can now estimate the time shift for each subject by projecting their
-data onto the estimated trajectory.
-
-``` r
-# run SILA estimate
-res_estimate_last <- sila_estimate(res$tout, df)
-
-ggplot(res_estimate_last, aes(x = estdtt0, y = val, color = Subject)) +
-  geom_point() +
-  geom_line(aes(group = Subject)) +
-  geom_line(
-    data = res$tout,
-    aes(x = adtime, y = val),
-    linewidth = 2,
-    color = "gray",
-    linetype = "dashed"
+ggplot(res$tsila, aes(x = adtime, y = val)) +
+  geom_line(aes(color = "Modeled curve")) +
+  geom_hline(aes(yintercept = 21, color = "threshold"), linetype = "dashed") +
+  xlab("Time from Threshold") +
+  ylab("Value") +
+  ggtitle(
+    expression(paste("SILA Modeled ", italic("Value vs. Time"), " Curve"))
   ) +
-  xlim(adtime_lims) +
-  ylim(c(2, 13)) +
-  xlab("Adjusted time (years)") +
-  ylab("Biomarker value") +
-  ggtitle("Align using last visit") +
-  theme_bw(base_size = 20) +
-  theme(legend.position = "inside", legend.position.inside = c(.15, .8))
+  theme_bw() +
+  theme(
+    legend.title = element_blank(),
+    legend.position = "inside",
+    legend.position.inside = c(.15, .85)
+  )
 ```
 
-<div class="figure">
-
-<img src="man/figures/README-silaestimateplot-1.png" alt="Figure 3a. Alignment using last visit. Observed value at last visit intersects the estimated (extrapolated) trajectory shown in gray." width="33%" />
-<p class="caption">
-Figure 3a. Alignment using last visit. Observed value at last visit
-intersects the estimated (extrapolated) trajectory shown in gray.
-</p>
-
-</div>
+<img src="man/figures/README-ratevsval-1.png" width="50%" /><img src="man/figures/README-ratevsval-2.png" width="50%" />
 
 ``` r
-
-res_estimate_first <- sila_estimate(res$tout, df, align_event = "first")
-
-ggplot(res_estimate_first, aes(x = estdtt0, y = val, color = Subject)) +
+# value vs. time for all subjects
+ggplot(
+  resfit,
+  aes(x = estdtt0, y = val, group = subid, color = factor(subid))
+) +
   geom_point() +
-  geom_line(aes(group = Subject)) +
+  geom_line() +
   geom_line(
-    data = res$tout,
-    aes(x = adtime, y = val),
-    linewidth = 2,
-    color = "gray",
-    linetype = "dashed"
+    data = res$tsila,
+    aes(x = adtime, y = val, group = NULL, color = NULL)
   ) +
-  xlim(adtime_lims) +
-  ylim(c(2, 13)) +
-  xlab("Adjusted time (years)") +
-  ylab("Biomarker value") +
-  ggtitle("Align using first visit") +
-  theme_bw(base_size = 20) +
-  theme(legend.position = "inside", legend.position.inside = c(.15, .8))
+  geom_hline(yintercept = 21, color = "black", linetype = "dashed") +
+  xlab("Estimated time to threshold (years)") +
+  ylab("Value") +
+  ggtitle("Data Aligned by Estimated Time to Threshold") +
+  theme_bw() +
+  theme(legend.position = "none")
 ```
 
-<div class="figure">
-
-<img src="man/figures/README-silaestimateplot-2.png" alt="Figure 3b. Alignment using first visit. Observed value at first visit intersects the estimated (extrapolated) trajectory shown in gray." width="33%" />
-<p class="caption">
-Figure 3b. Alignment using first visit. Observed value at first visit
-intersects the estimated (extrapolated) trajectory shown in gray.
-</p>
-
-</div>
+<img src="man/figures/README-valvstime-1.png" width="50%" />
 
 ``` r
+# value vs. time for an individual case
+one_res <- resfit %>%
+  filter(estdtt0 > 1 & estdtt0 < 10) %>%
+  group_by(subid) %>%
+  mutate(nvis = n()) %>%
+  ungroup() %>%
+  filter(nvis == 3) %>%
+  slice_head(n = 3)
 
-res_estimate_all <- sila_estimate(res$tout, df, align_event = "all")
-
-ggplot(res_estimate_all, aes(x = estdtt0, y = val, color = Subject)) +
+ggplot(one_res, aes(x = age, y = val, group = subid)) +
   geom_point() +
-  geom_line(aes(group = Subject)) +
+  geom_line(aes(color = "Individual Case Observations")) +
+  geom_hline(yintercept = 21, color = "black", linetype = "dashed") +
+  xlim(range(df$age)) +
+  ylim(range(res$tsila$val)) +
+  xlab("Age (years)") +
+  ylab("Value") +
+  ggtitle("Observations by Age") +
+  theme_bw() +
+  theme(
+    legend.title = element_blank(),
+    legend.position = "inside",
+    legend.position.inside = c(.2, .9)
+  )
+
+ggplot(one_res, aes(x = estdtt0, y = val, group = subid)) +
+  geom_point() +
+  geom_line(aes(color = "Individual Case Observations")) +
+  geom_hline(yintercept = 21, color = "black", linetype = "dashed") +
   geom_line(
-    data = res$tout,
-    aes(x = adtime, y = val),
-    linewidth = 2,
-    color = "gray",
-    linetype = "dashed"
+    data = res$tsila,
+    aes(x = adtime, y = val, group = NULL, color = "SILA Modeled Values")
   ) +
-  xlim(adtime_lims) +
-  ylim(c(2, 13)) +
-  xlab("Adjusted time (years)") +
-  ylab("Biomarker value") +
-  ggtitle("Align using all visits") +
-  theme_bw(base_size = 20) +
-  theme(legend.position = "inside", legend.position.inside = c(.15, .8))
+  xlim(range(res$tsila$adtime)) +
+  xlab("Estimated time to threshold (years)") +
+  ylab("Value") +
+  ggtitle("Observations by Estimated Time to Threshold") +
+  theme_bw() +
+  theme(
+    legend.title = element_blank(),
+    legend.position = "inside",
+    legend.position.inside = c(.2, .9)
+  )
 ```
 
-<div class="figure">
-
-<img src="man/figures/README-silaestimateplot-3.png" alt="Figure 3c. Alignment using all visits. Each subject is shifted such that the sum of squared errors with the estimated (extrapolated) trajectory (shown in gray) is minimized." width="33%" />
-<p class="caption">
-Figure 3c. Alignment using all visits. Each subject is shifted such that
-the sum of squared errors with the estimated (extrapolated) trajectory
-(shown in gray) is minimized.
-</p>
-
-</div>
+<img src="man/figures/README-valvstimeone-1.png" width="50%" /><img src="man/figures/README-valvstimeone-2.png" width="50%" />
 
 ## Development
 
