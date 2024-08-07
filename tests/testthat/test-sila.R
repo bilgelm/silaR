@@ -28,7 +28,7 @@ test_that("SILA runs", {
       "matlab -nodisplay -nojvm -nosplash -nodesktop -r",
       '"run(\'test_sila.m\'); exit;"'
     )
-    system(matlab_cmd)
+    system(matlab_cmd, ignore.stdout = TRUE)
     need_to_cleanup_matlab <- TRUE
 
     matlab_res_dir <- "."
@@ -39,12 +39,19 @@ test_that("SILA runs", {
   # compare R output to MATLAB output
 
   tsila <- readr::read_csv(
-    file.path(matlab_res_dir, "test_sila_matlab_tsila.csv")
+    file.path(matlab_res_dir, "test_sila_matlab_tsila.csv"),
+    show_col_types = FALSE
   )
   expect_equal(res$tsila, tsila)
 
   tdrs <- readr::read_csv(
-    file.path(matlab_res_dir, "test_sila_matlab_tdrs.csv")
+    file.path(matlab_res_dir, "test_sila_matlab_tdrs.csv"),
+    show_col_types = FALSE
   )
   expect_equal(res$tdrs, tdrs)
+
+  if (need_to_cleanup_matlab) {
+    # remove matlab output files
+    system("rm test_sila_matlab_t*.csv")
+  }
 })

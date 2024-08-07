@@ -32,7 +32,7 @@ test_that("ILLA without smoothing runs without error", {
       "matlab -nodisplay -nojvm -nosplash -nodesktop -r",
       '"run(\'test_illa.m\'); exit;"'
     )
-    system(matlab_cmd)
+    system(matlab_cmd, ignore.stdout = TRUE)
     need_to_cleanup_matlab <- TRUE
 
     matlab_res_dir <- "."
@@ -44,23 +44,27 @@ test_that("ILLA without smoothing runs without error", {
 
   # no smoothing
   tout0 <- readr::read_csv(
-    file.path(matlab_res_dir, "test_illa_matlab_tout_skern0.csv")
+    file.path(matlab_res_dir, "test_illa_matlab_tout_skern0.csv"),
+    show_col_types = FALSE
   )
   expect_equal(res0$tout, tout0)
 
   tdrs0 <- readr::read_csv(
-    file.path(matlab_res_dir, "test_illa_matlab_tdrs_skern0.csv")
+    file.path(matlab_res_dir, "test_illa_matlab_tdrs_skern0.csv"),
+    show_col_types = FALSE
   )
   expect_equal(res0$tdrs, tdrs0)
 
   # with smoothing
   tout05 <- readr::read_csv(
-    file.path(matlab_res_dir, "test_illa_matlab_tout_skern0.5.csv")
+    file.path(matlab_res_dir, "test_illa_matlab_tout_skern0.5.csv"),
+    show_col_types = FALSE
   )
   expect_equal(res05$tout, tout05, tolerance = 1e-3)
 
   tdrs05 <- readr::read_csv(
-    file.path(matlab_res_dir, "test_illa_matlab_tdrs_skern0.5.csv")
+    file.path(matlab_res_dir, "test_illa_matlab_tdrs_skern0.5.csv"),
+    show_col_types = FALSE
   )
   expect_equal(res05$tdrs, tdrs05, tolerance = 2e-3)
 

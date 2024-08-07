@@ -34,7 +34,7 @@ test_that("SILA estimate runs without error", {
       "matlab -nodisplay -nojvm -nosplash -nodesktop -r",
       '"run(\'test_sila_estimate.m\'); exit;"'
     )
-    system(matlab_cmd)
+    system(matlab_cmd, ignore.stdout = TRUE)
     need_to_cleanup_matlab <- TRUE
 
     matlab_res_dir <- "."
@@ -46,13 +46,15 @@ test_that("SILA estimate runs without error", {
 
   # align last
   tout_last <- readr::read_csv(
-    file.path(matlab_res_dir, "test_sila_estimate_matlab_aevent_last.csv")
+    file.path(matlab_res_dir, "test_sila_estimate_matlab_aevent_last.csv"),
+    show_col_types = FALSE
   )
   expect_equal(res_lastalign, tout_last)
 
   # align first
   tout_first <- readr::read_csv(
-    file.path(matlab_res_dir, "test_sila_estimate_matlab_aevent_first.csv")
+    file.path(matlab_res_dir, "test_sila_estimate_matlab_aevent_first.csv"),
+    show_col_types = FALSE
   )
   expect_equal(res_firstalign, tout_first)
 
