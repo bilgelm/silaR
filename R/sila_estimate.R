@@ -91,37 +91,47 @@ sila_estimate <- function(
     dplyr::mutate(
       minage = min(age),
       maxage = max(age),
-      valt0 = valt0,
-      ageref = dplyr::case_when(
-        align_event == "first" ~ minage,
-        align_event == "last" ~ maxage
-        # align_event == "all" ~ mean(age)
-      ),
-      dtageref = age - ageref,
-      nvis = dplyr::n()
+      valt0 = valt0
     ) %>%
     dplyr::ungroup() %>%
-    nest(.by = subid, .key = "data") %>%
-    dplyr::mutate(
-      chronref = map_dbl(
-        data,
-        ~ dplyr::case_when(
-          align_event == "first" ~ val_to_adtime(dplyr::first(.x$val)),
-          align_event == "last" ~ val_to_adtime(dplyr::last(.x$val))
-          # align_event == "all" ~ stats::coef(
-          #   stats::nls(
-          #     val ~ adtime_to_val(age + shift),
-          #     data = .x,
-          #     start = list(
-          #       shift = val_to_adtime(mean(.x$val)) - mean(.x$age)
-          #     )
-          #   )
-          # )["shift"] + .x$ageref[1]
+    nest(.by = subid, .key = "data")
+
+  if (align_event %in% c("first", "last")) {
+    tout <- tout %>%
+      dplyr::mutate(
+        ageref = map_dbl(
+          data, ~ getFromNamespace(align_event, "dplyr")(.x$age)
+        ),
+        chronref = map_dbl(
+          data,
+          ~ val_to_adtime(getFromNamespace(align_event, "dplyr")(.x$val))
         )
-      ),
-    ) %>%
+      )
+  } else {
+    tout <- tout %>%
+      dplyr::mutate(
+        ageref = map_dbl(data, ~ mean(.x$age)),
+        chronref = map_dbl(
+          data,
+          ~ stats::coef(
+            stats::nls(
+              val ~ adtime_to_val(age + shift),
+              data = .x,
+              start = list(
+                shift = val_to_adtime(mean(.x$val)) - mean(.x$age)
+              ),
+              control = stats::nls.control(
+                maxiter = 1000, tol = 0.04, minFactor = 1e-16
+              )
+            )
+          )["shift"]
+        ) + ageref
+      )
+  }
+  tout <- tout %>%
     unnest(cols = c(data)) %>%
     dplyr::mutate(
+      dtageref = age - ageref,
       estdtt0 = chronref + dtageref,
       estval = adtime_to_val(estdtt0),
       estaget0 = ageref - chronref,
@@ -150,6 +160,7 @@ sila_estimate <- function(
   }
 
   tout %>%
-    dplyr::select(-nvis, -chronref) %>%
+    dplyr::select(-chronref) %>%
+    dplyr::relocate(dtageref, .after = ageref) %>%
     dplyr::relocate(estdtt0, .after = estaget0)
 }
