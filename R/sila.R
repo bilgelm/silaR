@@ -1,27 +1,28 @@
 #' Sampled Iterative Local Approximation with smoothing
 #'
-#' @param df A tibble with the following columns: subid, age, val.
-#'           subid is a numeric subject identifier, age is age in years at each
-#'           observation, and value is the biomarker value to be modeled.
-#'           Age cannot be repeated within subject.
-#' @param dt Numerical integration step size
-#' @param val0 Anchor value that corresponds to t = 0
-#' @param maxi Maximum number of iterations
+#' @inheritParams illa
 #' @param sk List of smoothing kernels
 #'
-#' @return A list containing two tibbles:
-#'         - tsila specifies the value vs. time curve: val is the SILA-modeled
-#'         value, time is the SILA-modeled time resulting from numeric
-#'         integration (not anchored), adtime is the anchored time such that
-#'         t = 0 corresponds to val0, mrate is the mean sampled rate through the
-#'         value, sdrate is the mean sampled rate through the value, nsubs is
-#'         the number of subjects with observations that intersect the modeled
-#'         value, sdval is an approximation of the standard deviation of the
-#'         value (calculated by propagating the rate error), ci95 is an
-#'         approximation of the 95% confidence interval of the value (likely
-#'         underestimated since it does not account for temporal covariance
-#'         across observations)
-#'         - tdrs
+#' @return A list containing two `tibble`s:
+#' * `tsila` specifies the value vs. time curve:
+#'   * `val` is the SILA-modeled
+#' value
+#'   * `time` is the SILA-modeled time resulting from numeric integration
+#' (not anchored)
+#'   * `adtime` is the anchored time such that `t = 0` corresponds to
+#' `val0`
+#'   * `mrate` is the mean sampled rate through the value
+#'   * `sdrate` is the
+#' mean sampled rate through the value
+#'   * `nsubs` is the number of subjects with
+#' observations that intersect the modeled value
+#'   * `sdval` is an approximation of
+#' the standard deviation of the value (calculated by propagating the rate
+#' error)
+#'   * `ci95` is an approximation of the 95% confidence interval of the
+#' value (likely underestimated since it does not account for temporal
+#' covariance across observations)
+#' * `tdrs`
 #' @importFrom dplyr %>%
 #' @export
 #'

@@ -1,38 +1,36 @@
 #' Generate subject-level estimates of time to threshold based on the modeled
 #' value vs. time function
 #'
-#' @param tsila Tibble output of SILA containing the modeled value vs. time
+#' @param tsila `tibble` output of SILA containing the modeled value vs. time
 #'              function
-#' @param df A tibble with the following columns: subid, age, val
+#' @param df A `tibble` with the following columns: `subid`, `age`, `val`
 #' @param align_event Which observation(s) to use within a subject to estimate
-#'                    subject-level age of onset and duration of positivity.
-#'                    Can be "first" or "last" (default).
-#' @param extrap_years Data within extrap_years is used to extrapolate SILA
-#'                     estimates when observations fall beyond the modeled
-#'                     range. Linear regression is applied to the modeled
-#'                     relationship between value and time. Default is 3.
+#' subject-level age of onset and duration of positivity. Can be "first", "last"
+#' (default), or "all".
+#' @param extrap_years Data within `extrap_years` is used to extrapolate SILA
+#' estimates when observations fall beyond the modeled range. Linear regression
+#' is applied to the modeled relationship between value and time. Default is 3.
 #' @param truncate_aget0 Boolean (default is TRUE) specifying if subject-level
-#'                       estimates should be truncated such that the lowest
-#'                       duration estimate is set to the earliest modeled time
-#'                       point on the SILA curve.
+#' estimates should be truncated such that the lowest duration estimate is set
+#' to the earliest modeled time point on the SILA curve.
 #'
 #' @return A tibble containing the following columns:
-#'         - subid: subject identifier
-#'         - age: age in years at observation
-#'         - val: observed biomarker value
-#'         - minage: minimum observed age of subject
-#'         - maxage: maximum observed age of subject
-#'         - valt0: time point defining zero time
-#'         - ageref: age at the reference observation
-#'         - dtageref: time from observation to reference
-#'         - estval: SILA-estimated value at observation
-#'         - estage0: SILA-estimated age the subject will cross the threshold
-#'         - estdtt0: SILA-estimated time from threshold
-#'         - estresid: Estimated biomarker residual
-#'         - estpos: Boolean indicating if SILA estimate is above threshold
-#'         - aevent: Same as align_event
-#'         - extrapyrs: Same as extrap_years
-#'         - truncated: Boolean indicating if estaget0 and estdtt0 are truncated
+#' * `subid`: subject identifier
+#' * `age`: age in years at observation
+#' * `val`: observed biomarker value
+#' * `minage`: minimum observed age of subject
+#' * `maxage`: maximum observed age of subject
+#' * `valt0`: time point defining zero time
+#' * `ageref`: age at the reference observation
+#' * `dtageref`: time from observation to reference
+#' * `estval`: SILA-estimated value at observation
+#' * `estage0`: SILA-estimated age the subject will cross the threshold
+#' * `estdtt0`: SILA-estimated time from threshold
+#' * `estresid`: Estimated biomarker residual
+#' * `estpos`: Boolean indicating if SILA estimate is above threshold
+#' * `aevent`: Same as `align_event`
+#' * `extrapyrs`: Same as `extrap_years`
+#' * `truncated`: Boolean indicating if `estaget0` and `estdtt0` are truncated
 #' @importFrom dplyr %>%
 #' @importFrom tidyr nest unnest
 #' @export

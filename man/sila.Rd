@@ -7,33 +7,47 @@
 sila(df, dt, val0, maxi, sk = NULL)
 }
 \arguments{
-\item{df}{A tibble with the following columns: subid, age, val.
-subid is a numeric subject identifier, age is age in years at each
-observation, and value is the biomarker value to be modeled.
-Age cannot be repeated within subject.}
+\item{df}{A \code{tibble} with the following columns: \code{subid}, \code{age}, \code{val}.
+\itemize{
+\item \code{subid} is a numeric subject identifier
+\item \code{age} is age in years at each observation (cannot be repeated within
+subject)
+\item \code{value} is the biomarker value to be modeled
+}}
 
-\item{dt}{Numerical integration step size}
+\item{dt}{Time difference between queries (numerical integration step size)}
 
-\item{val0}{Anchor value that corresponds to t = 0}
+\item{val0}{Anchor value that corresponds to \code{t = 0}}
 
 \item{maxi}{Maximum number of iterations}
 
 \item{sk}{List of smoothing kernels}
 }
 \value{
-A list containing two tibbles:
-- tsila specifies the value vs. time curve: val is the SILA-modeled
-value, time is the SILA-modeled time resulting from numeric
-integration (not anchored), adtime is the anchored time such that
-t = 0 corresponds to val0, mrate is the mean sampled rate through the
-value, sdrate is the mean sampled rate through the value, nsubs is
-the number of subjects with observations that intersect the modeled
-value, sdval is an approximation of the standard deviation of the
-value (calculated by propagating the rate error), ci95 is an
-approximation of the 95\% confidence interval of the value (likely
-underestimated since it does not account for temporal covariance
-across observations)
-- tdrs
+A list containing two \code{tibble}s:
+\itemize{
+\item \code{tsila} specifies the value vs. time curve:
+\itemize{
+\item \code{val} is the SILA-modeled
+value
+\item \code{time} is the SILA-modeled time resulting from numeric integration
+(not anchored)
+\item \code{adtime} is the anchored time such that \code{t = 0} corresponds to
+\code{val0}
+\item \code{mrate} is the mean sampled rate through the value
+\item \code{sdrate} is the
+mean sampled rate through the value
+\item \code{nsubs} is the number of subjects with
+observations that intersect the modeled value
+\item \code{sdval} is an approximation of
+the standard deviation of the value (calculated by propagating the rate
+error)
+\item \code{ci95} is an approximation of the 95\% confidence interval of the
+value (likely underestimated since it does not account for temporal
+covariance across observations)
+}
+\item \code{tdrs}
+}
 }
 \description{
 Sampled Iterative Local Approximation with smoothing

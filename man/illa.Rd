@@ -7,18 +7,24 @@
 illa(df, dt, val0, maxi, skern)
 }
 \arguments{
-\item{df}{A tibble with the following columns: subid, age, val}
+\item{df}{A \code{tibble} with the following columns: \code{subid}, \code{age}, \code{val}.
+\itemize{
+\item \code{subid} is a numeric subject identifier
+\item \code{age} is age in years at each observation (cannot be repeated within
+subject)
+\item \code{value} is the biomarker value to be modeled
+}}
 
-\item{dt}{Time difference between queries}
+\item{dt}{Time difference between queries (numerical integration step size)}
 
-\item{val0}{Anchor value}
+\item{val0}{Anchor value that corresponds to \code{t = 0}}
 
 \item{maxi}{Maximum number of iterations}
 
 \item{skern}{Span of the smoothing kernel}
 }
 \value{
-A list containing two tibbles
+A list containing two \code{tibble}s
 }
 \description{
 Estimate value vs. time curve from longitudinal data

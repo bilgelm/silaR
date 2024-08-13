@@ -14,43 +14,43 @@ sila_estimate(
 )
 }
 \arguments{
-\item{tsila}{Tibble output of SILA containing the modeled value vs. time
+\item{tsila}{\code{tibble} output of SILA containing the modeled value vs. time
 function}
 
-\item{df}{A tibble with the following columns: subid, age, val}
+\item{df}{A \code{tibble} with the following columns: \code{subid}, \code{age}, \code{val}}
 
 \item{align_event}{Which observation(s) to use within a subject to estimate
-subject-level age of onset and duration of positivity.
-Can be "first" or "last" (default).}
+subject-level age of onset and duration of positivity. Can be "first", "last"
+(default), or "all".}
 
-\item{extrap_years}{Data within extrap_years is used to extrapolate SILA
-estimates when observations fall beyond the modeled
-range. Linear regression is applied to the modeled
-relationship between value and time. Default is 3.}
+\item{extrap_years}{Data within \code{extrap_years} is used to extrapolate SILA
+estimates when observations fall beyond the modeled range. Linear regression
+is applied to the modeled relationship between value and time. Default is 3.}
 
 \item{truncate_aget0}{Boolean (default is TRUE) specifying if subject-level
-estimates should be truncated such that the lowest
-duration estimate is set to the earliest modeled time
-point on the SILA curve.}
+estimates should be truncated such that the lowest duration estimate is set
+to the earliest modeled time point on the SILA curve.}
 }
 \value{
 A tibble containing the following columns:
-- subid: subject identifier
-- age: age in years at observation
-- val: observed biomarker value
-- minage: minimum observed age of subject
-- maxage: maximum observed age of subject
-- valt0: time point defining zero time
-- ageref: age at the reference observation
-- dtageref: time from observation to reference
-- estval: SILA-estimated value at observation
-- estage0: SILA-estimated age the subject will cross the threshold
-- estdtt0: SILA-estimated time from threshold
-- estresid: Estimated biomarker residual
-- estpos: Boolean indicating if SILA estimate is above threshold
-- aevent: Same as align_event
-- extrapyrs: Same as extrap_years
-- truncated: Boolean indicating if estaget0 and estdtt0 are truncated
+\itemize{
+\item \code{subid}: subject identifier
+\item \code{age}: age in years at observation
+\item \code{val}: observed biomarker value
+\item \code{minage}: minimum observed age of subject
+\item \code{maxage}: maximum observed age of subject
+\item \code{valt0}: time point defining zero time
+\item \code{ageref}: age at the reference observation
+\item \code{dtageref}: time from observation to reference
+\item \code{estval}: SILA-estimated value at observation
+\item \code{estage0}: SILA-estimated age the subject will cross the threshold
+\item \code{estdtt0}: SILA-estimated time from threshold
+\item \code{estresid}: Estimated biomarker residual
+\item \code{estpos}: Boolean indicating if SILA estimate is above threshold
+\item \code{aevent}: Same as \code{align_event}
+\item \code{extrapyrs}: Same as \code{extrap_years}
+\item \code{truncated}: Boolean indicating if \code{estaget0} and \code{estdtt0} are truncated
+}
 }
 \description{
 Generate subject-level estimates of time to threshold based on the modeled

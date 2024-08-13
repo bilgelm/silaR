@@ -1,12 +1,16 @@
 #' Estimate value vs. time curve from longitudinal data
 #'
-#' @param df A tibble with the following columns: subid, age, val
-#' @param dt Time difference between queries
-#' @param val0 Anchor value
+#' @param df A `tibble` with the following columns: `subid`, `age`, `val`.
+#' * `subid` is a numeric subject identifier
+#' * `age` is age in years at each observation (cannot be repeated within
+#' subject)
+#' * `value` is the biomarker value to be modeled
+#' @param dt Time difference between queries (numerical integration step size)
+#' @param val0 Anchor value that corresponds to `t = 0`
 #' @param maxi Maximum number of iterations
 #' @param skern Span of the smoothing kernel
 #'
-#' @return A list containing two tibbles
+#' @return A list containing two `tibble`s
 #' @importFrom dplyr %>%
 #' @importFrom purrr map_dbl
 #' @importFrom tibble tibble
