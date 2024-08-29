@@ -6,30 +6,30 @@
 value vs. time function}
 \usage{
 sila_estimate(
-  tsila,
-  df,
-  align_event = "last",
-  extrap_years = 3,
-  truncate_aget0 = TRUE
+  sila_res,
+  df = NULL,
+  align_event = "all",
+  adtime_limits = c(-50, 50)
 )
 }
 \arguments{
-\item{tsila}{\code{tibble} output of SILA containing the modeled value vs. time
-function}
+\item{sila_res}{output of illa, an object of class "sila"}
 
-\item{df}{A \code{tibble} with the following columns: \code{subid}, \code{age}, \code{val}}
+\item{df}{A \code{tibble} with the following columns: \code{subid}, \code{age}, \code{val}
+\itemize{
+\item \code{subid} is a numeric subject identifier
+\item \code{age} is age in years at each observation (cannot be repeated within
+subject)
+\item \code{value} is the biomarker value to be modeled
+}}
 
-\item{align_event}{Which observation(s) to use within a subject to estimate
-subject-level age of onset and duration of positivity. Can be "first", "last"
-(default), or "all".}
+\item{align_event}{One of: "all", "first", "last", "mean". "all" uses all
+visits per subject to determine their time shifts. "first" uses the first
+visit per subject only. "last" uses the last visit per subject only. "mean"
+uses the mean value and mean age within each subject to estimate the shift.}
 
-\item{extrap_years}{Data within \code{extrap_years} is used to extrapolate SILA
-estimates when observations fall beyond the modeled range. Linear regression
-is applied to the modeled relationship between value and time. Default is 3.}
-
-\item{truncate_aget0}{Boolean (default is TRUE) specifying if subject-level
-estimates should be truncated such that the lowest duration estimate is set
-to the earliest modeled time point on the SILA curve.}
+\item{adtime_limits}{a vector with two elements specifying the min and max
+allowed values for adjusted time}
 }
 \value{
 A tibble containing the following columns:
@@ -37,19 +37,8 @@ A tibble containing the following columns:
 \item \code{subid}: subject identifier
 \item \code{age}: age in years at observation
 \item \code{val}: observed biomarker value
-\item \code{minage}: minimum observed age of subject
-\item \code{maxage}: maximum observed age of subject
-\item \code{valt0}: time point defining zero time
-\item \code{ageref}: age at the reference observation
-\item \code{dtageref}: time from observation to reference
-\item \code{estval}: SILA-estimated value at observation
-\item \code{estage0}: SILA-estimated age the subject will cross the threshold
-\item \code{estdtt0}: SILA-estimated time from threshold
-\item \code{estresid}: Estimated biomarker residual
-\item \code{estpos}: Boolean indicating if SILA estimate is above threshold
-\item \code{aevent}: Same as \code{align_event}
-\item \code{extrapyrs}: Same as \code{extrap_years}
-\item \code{truncated}: Boolean indicating if \code{estaget0} and \code{estdtt0} are truncated
+\item \code{shift}: estimated time shift
+\item \code{adtime}: estimated adjusted time, given by age + shift
 }
 }
 \description{
@@ -72,7 +61,6 @@ df <- tibble::tibble(
     2, 4, 6, 8, 10, 12
   ) + stats::rnorm(3 + 6, mean = 0, sd = .1)
 )
-illa_res <- illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
-sila_estimate(illa_res$tout, df)
-sila_estimate(illa_res$tout, df, align_event = "first")
+res <- illa(df, val0 = 2)
+sila_estimate(res)
 }

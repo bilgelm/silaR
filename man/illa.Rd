@@ -4,10 +4,10 @@
 \alias{illa}
 \title{Estimate value vs. time curve from longitudinal data}
 \usage{
-illa(df, dt, val0, maxi, skern)
+illa(df, val0)
 }
 \arguments{
-\item{df}{A \code{tibble} with the following columns: \code{subid}, \code{age}, \code{val}.
+\item{df}{A \code{tibble} with the following columns: \code{subid}, \code{age}, \code{val}
 \itemize{
 \item \code{subid} is a numeric subject identifier
 \item \code{age} is age in years at each observation (cannot be repeated within
@@ -15,16 +15,17 @@ subject)
 \item \code{value} is the biomarker value to be modeled
 }}
 
-\item{dt}{Time difference between queries (numerical integration step size)}
-
-\item{val0}{Anchor value that corresponds to \code{t = 0}}
-
-\item{maxi}{Maximum number of iterations}
-
-\item{skern}{Span of the smoothing kernel}
+\item{val0}{Anchor biomarker value that corresponds to \code{t = 0}}
 }
 \value{
-A list containing two \code{tibble}s
+\code{illa} returns an object of class "sila" containg:
+\itemize{
+\item \code{val0} Anchor biomarker value that corresponds to \code{t = 0}
+\item \code{adtime_to_val} function representing g : val = g(adtime)
+\item \code{val_to_rate} function representing f : rate = f(val)
+\item \code{tdrs} a \code{tibble} with sampled rates at query points
+\item \code{is_decreasing} TRUE if biomarker value globally decreases with age
+}
 }
 \description{
 Estimate value vs. time curve from longitudinal data
@@ -45,6 +46,5 @@ df <- tibble::tibble(
     2, 4, 6, 8, 10, 12
   ) + stats::rnorm(3 + 6, mean = 0, sd = .1)
 )
-illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
-illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0.2)
+illa(df, val0 = 2)
 }

@@ -14,62 +14,11 @@ test_that("ILLA without smoothing runs without error", {
     )
   )
 
-  expect_no_error(
-    res0 <- illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
-  )
+  val0 <- 2
 
   expect_no_error(
-    res05 <- illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0.5)
+    res <- illa(df, val0)
   )
 
-  need_to_cleanup_matlab <- FALSE
-  if (!testthat:::on_ci()) {
-    # if not on CI, run the Matlab test
-    # in order for this to work with devtools::check(),
-    # the directory SILA-AD-Biomarker should be in your Matlab path
-    matlab_cmd <- paste(
-      "source ~/.zshrc;", # TODO: need a better solution here
-      "matlab -nodisplay -nojvm -nosplash -nodesktop -r",
-      '"run(\'test_illa.m\'); exit;"'
-    )
-    system(matlab_cmd, ignore.stdout = TRUE)
-    need_to_cleanup_matlab <- TRUE
-
-    matlab_res_dir <- "."
-  } else {
-    matlab_res_dir <- file.path("..", "..", "..", "..", "matlab-results")
-  }
-
-  # compare R output to MATLAB output
-
-  # no smoothing
-  tout0 <- readr::read_csv(
-    file.path(matlab_res_dir, "test_illa_matlab_tout_skern0.csv"),
-    show_col_types = FALSE
-  )
-  expect_equal(res0$tout, tout0)
-
-  tdrs0 <- readr::read_csv(
-    file.path(matlab_res_dir, "test_illa_matlab_tdrs_skern0.csv"),
-    show_col_types = FALSE
-  )
-  expect_equal(res0$tdrs, tdrs0)
-
-  # with smoothing
-  tout05 <- readr::read_csv(
-    file.path(matlab_res_dir, "test_illa_matlab_tout_skern0.5.csv"),
-    show_col_types = FALSE
-  )
-  expect_equal(res05$tout, tout05, tolerance = 1e-3)
-
-  tdrs05 <- readr::read_csv(
-    file.path(matlab_res_dir, "test_illa_matlab_tdrs_skern0.5.csv"),
-    show_col_types = FALSE
-  )
-  expect_equal(res05$tdrs, tdrs05, tolerance = 2e-3)
-
-  if (need_to_cleanup_matlab) {
-    # remove matlab output files
-    system("rm test_illa_matlab_t*.csv")
-  }
+  expect_equal(res$adtime_to_val(0), val0)
 })

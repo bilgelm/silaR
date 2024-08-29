@@ -31,15 +31,21 @@ test_that("SILA can recover shifts in simulated data", {
   df_true$adtime <- adtime
 
   expect_no_error(
-    res <- silaR::sila(df, dt = .1, val0 = 0.5, maxi = 100)
+    res <- illa(df, val0 = 0.5)
   )
 
   expect_no_error(
-    resfit <- silaR::sila_estimate(res$tsila, df, align_event = "all")
+    resfit <- sila_estimate(
+      res,
+      align_event = "all",
+      adtime_limits = c(-10, 10)
+    )
   )
 
   # RMSE of estimated disease age
   # note that this is the same as the RMSE of the estimated shifts
   # ie sqrt(mean((resfit %>% filter(dtageref==0) %>% pull(estaget0) - shift)^2))
-  expect_lt(sqrt(mean((resfit$estdtt0 - df_true$adtime)^2)), 1.3)
+  print("RMSE")
+  print(sqrt(mean((resfit$adtime - df_true$adtime)^2)))
+  expect_lt(sqrt(mean((resfit$adtime - df_true$adtime)^2)), 1.3)
 })

@@ -14,56 +14,9 @@ test_that("SILA estimate runs without error", {
     )
   )
 
-  illa_res <- illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
+  res <- illa(df, val0 = 2)
 
   expect_no_error(
-    res_lastalign <- sila_estimate(illa_res$tout, df)
+    res_lastalign <- sila_estimate(res)
   )
-
-  expect_no_error(
-    res_firstalign <- sila_estimate(illa_res$tout, df, align_event = "first")
-  )
-
-  expect_no_error(
-    res_allalign <- sila_estimate(illa_res$tout, df, align_event = "all")
-  )
-
-  need_to_cleanup_matlab <- FALSE
-  if (!testthat:::on_ci()) {
-    # if not on CI, run the Matlab test
-    # in order for this to work with devtools::check(),
-    # the directory SILA-AD-Biomarker should be in your Matlab path
-    matlab_cmd <- paste(
-      "source ~/.zshrc;", # TODO: need a better solution here
-      "matlab -nodisplay -nojvm -nosplash -nodesktop -r",
-      '"run(\'test_sila_estimate.m\'); exit;"'
-    )
-    system(matlab_cmd, ignore.stdout = TRUE)
-    need_to_cleanup_matlab <- TRUE
-
-    matlab_res_dir <- "."
-  } else {
-    matlab_res_dir <- file.path("..", "..", "..", "..", "matlab-results")
-  }
-
-  # compare R output to MATLAB output
-
-  # align last
-  tout_last <- readr::read_csv(
-    file.path(matlab_res_dir, "test_sila_estimate_matlab_aevent_last.csv"),
-    show_col_types = FALSE
-  )
-  expect_equal(res_lastalign, tout_last)
-
-  # align first
-  tout_first <- readr::read_csv(
-    file.path(matlab_res_dir, "test_sila_estimate_matlab_aevent_first.csv"),
-    show_col_types = FALSE
-  )
-  expect_equal(res_firstalign, tout_first)
-
-  if (need_to_cleanup_matlab) {
-    # remove matlab output files
-    system("rm test_sila_estimate_matlab_aevent_*.csv")
-  }
 })

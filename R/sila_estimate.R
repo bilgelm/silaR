@@ -1,38 +1,23 @@
 #' Generate subject-level estimates of time to threshold based on the modeled
 #' value vs. time function
 #'
-#' @param tsila `tibble` output of SILA containing the modeled value vs. time
-#'              function
-#' @param df A `tibble` with the following columns: `subid`, `age`, `val`
-#' @param align_event Which observation(s) to use within a subject to estimate
-#' subject-level age of onset and duration of positivity. Can be "first", "last"
-#' (default), or "all".
-#' @param extrap_years Data within `extrap_years` is used to extrapolate SILA
-#' estimates when observations fall beyond the modeled range. Linear regression
-#' is applied to the modeled relationship between value and time. Default is 3.
-#' @param truncate_aget0 Boolean (default is TRUE) specifying if subject-level
-#' estimates should be truncated such that the lowest duration estimate is set
-#' to the earliest modeled time point on the SILA curve.
+#' @param sila_res output of illa, an object of class "sila"
+#' @inheritParams illa
+#' @param align_event One of: "all", "first", "last", "mean". "all" uses all
+#' visits per subject to determine their time shifts. "first" uses the first
+#' visit per subject only. "last" uses the last visit per subject only. "mean"
+#' uses the mean value and mean age within each subject to estimate the shift.
+#' @param adtime_limits a vector with two elements specifying the min and max
+#' allowed values for adjusted time
 #'
 #' @return A tibble containing the following columns:
 #' * `subid`: subject identifier
 #' * `age`: age in years at observation
 #' * `val`: observed biomarker value
-#' * `minage`: minimum observed age of subject
-#' * `maxage`: maximum observed age of subject
-#' * `valt0`: time point defining zero time
-#' * `ageref`: age at the reference observation
-#' * `dtageref`: time from observation to reference
-#' * `estval`: SILA-estimated value at observation
-#' * `estage0`: SILA-estimated age the subject will cross the threshold
-#' * `estdtt0`: SILA-estimated time from threshold
-#' * `estresid`: Estimated biomarker residual
-#' * `estpos`: Boolean indicating if SILA estimate is above threshold
-#' * `aevent`: Same as `align_event`
-#' * `extrapyrs`: Same as `extrap_years`
-#' * `truncated`: Boolean indicating if `estaget0` and `estdtt0` are truncated
+#' * `shift`: estimated time shift
+#' * `adtime`: estimated adjusted time, given by age + shift
 #' @importFrom dplyr %>%
-#' @importFrom tidyr nest unnest
+#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -51,114 +36,85 @@
 #'     2, 4, 6, 8, 10, 12
 #'   ) + stats::rnorm(3 + 6, mean = 0, sd = .1)
 #' )
-#' illa_res <- illa(df, dt = 2, val0 = 2, maxi = 100, skern = 0)
-#' sila_estimate(illa_res$tout, df)
-#' sila_estimate(illa_res$tout, df, align_event = "first")
+#' res <- illa(df, val0 = 2)
+#' sila_estimate(res)
 sila_estimate <- function(
-    tsila, df, align_event = "last", extrap_years = 3, truncate_aget0 = TRUE) {
-  # Create extrapolated model
-  md1 <- stats::lm(
-    adtime ~ val,
-    tsila %>%
-      dplyr::filter(adtime > max(adtime) - extrap_years)
-  )
-  md2 <- stats::lm(
-    adtime ~ val,
-    tsila %>%
-      dplyr::filter(adtime < min(adtime) + extrap_years)
-  )
-
-  rng <- diff(range(df$val))
-  minval <- min(df$val) - rng
-  maxval <- max(df$val) + rng
-  left_adtime <- stats::predict(md2, newdata = tibble(val = minval))
-  right_adtime <- stats::predict(md1, newdata = tibble(val = maxval))
-  extended_adtime <- c(left_adtime, tsila$adtime, right_adtime)
-  extended_val <- c(minval, tsila$val, maxval)
-
-  val_to_adtime <- stats::approxfun(extended_val, extended_adtime)
-
-  # if adtime is outside of the (extended) bounds of the observed data, truncate
-  # the estimated value at the bounds of the (extended) observed data values
-  adtime_to_val <- stats::approxfun(extended_adtime, extended_val, rule = 2)
-
-  valt0 <- tsila$val[tsila$adtime == 0]
-  tout <- df %>%
-    dplyr::arrange(subid, age) %>%
-    dplyr::group_by(subid) %>%
-    dplyr::mutate(
-      minage = min(age),
-      maxage = max(age),
-      valt0 = valt0
-    ) %>%
-    dplyr::ungroup() %>%
-    nest(.by = subid, .key = "data")
-
-  if (align_event %in% c("first", "last")) {
-    tout <- tout %>%
-      dplyr::mutate(
-        ageref = map_dbl(
-          data, ~ getFromNamespace(align_event, "dplyr")(.x$age)
-        ),
-        chronref = map_dbl(
-          data,
-          ~ val_to_adtime(getFromNamespace(align_event, "dplyr")(.x$val))
-        )
-      )
-  } else {
-    tout <- tout %>%
-      dplyr::mutate(
-        ageref = map_dbl(data, ~ mean(.x$age)),
-        chronref = map_dbl(
-          data,
-          ~ stats::coef(
-            stats::nls(
-              val ~ adtime_to_val(age + shift),
-              data = .x,
-              start = list(
-                shift = val_to_adtime(mean(.x$val)) - mean(.x$age)
-              ),
-              control = stats::nls.control(
-                maxiter = 1000, tol = 0.04, minFactor = 1e-16
-              )
-            )
-          )["shift"]
-        ) + ageref
-      )
+    sila_res, df = NULL, align_event = "all", adtime_limits = c(-50, 50)) {
+  if (is.null(df)) {
+    df <- sila_res$df
   }
+
+  adtimes <- seq(adtime_limits[1], adtime_limits[2], length.out = 1000)
+  vals <- sila_res$adtime_to_val(adtimes)
+
+  tout <- df %>%
+    dplyr::arrange(.data$subid, .data$age) %>%
+    tidyr::nest(.by = subid, .key = "data") %>%
+    dplyr::mutate(shift = NA_real_)
+
+  val_to_adtime_quick <- stats::approxfun(vals, adtimes, rule = 2)
+  adtime_to_val_quick <- stats::approxfun(adtimes, vals, rule = 2) # nolint
+
+  align_event_namespace <- switch(align_event,
+    first = "dplyr",
+    last = "dplyr",
+    mean = "base",
+    "unknown"
+  )
+
+  for (rowid in seq_len(nrow(tout))) {
+    .x <- tout$data[[rowid]]
+    if (max(.x$val) < vals[2]) {
+      tout$shift[rowid] <- adtime_limits[1] - min(.x$age)
+    } else if (min(.x$val) > vals[length(vals) - 1]) {
+      tout$shift[rowid] <- adtime_limits[2] - max(.x$age)
+    } else {
+      if (align_event %in% c("first", "last", "mean", "median")) {
+        tout$shift[rowid] <- val_to_adtime_quick(
+          utils::getFromNamespace(align_event, align_event_namespace)(.x$val)
+        ) - utils::getFromNamespace(align_event, align_event_namespace)(.x$age)
+      } else {
+        tout$shift[rowid] <- tryCatch(
+          {
+            stats::coef(
+              stats::nls(
+                val ~ adtime_to_val_quick(age + shift),
+                data = .x,
+                start = list(
+                  shift = mean(val_to_adtime_quick(.x$val) - .x$age)
+                ),
+                control = stats::nls.control(
+                  maxiter = 1000, tol = 0.04, minFactor = 1e-16
+                ),
+                algorithm = "port",
+                lower = adtime_limits[1] - min(.x$age),
+                upper = adtime_limits[2] - max(.x$age)
+              )
+            )["shift"]
+          },
+          error = function(cond) {
+            stats::coef(
+              nls2::nls2(
+                val ~ adtime_to_val_quick(age + shift),
+                data = .x,
+                start = list(
+                  shift = range(val_to_adtime_quick(.x$val) - .x$age)
+                ),
+                control = stats::nls.control(maxiter = 100),
+                algorithm = "grid-search"
+              )
+            )["shift"]
+          }
+        )
+      }
+    }
+  }
+
   tout <- tout %>%
-    unnest(cols = c(data)) %>%
+    tidyr::unnest(cols = c(data)) %>%
     dplyr::mutate(
-      dtageref = age - ageref,
-      estdtt0 = chronref + dtageref,
-      estval = adtime_to_val(estdtt0),
-      estaget0 = ageref - chronref,
-      estresid = val - estval,
-      estpos = 1 * (estval >= valt0),
-      aevent = align_event,
-      extrapyrs = extrap_years
+      adtime = .data$age + .data$shift
     )
 
-  # This is an option to restrict the estaget0 such that at a person's oldest
-  # age they cannot have a estaget0 less than minimum ILLA value time to A+
-  if (truncate_aget0) {
-    tout <- tout %>%
-      dplyr::arrange(subid, age) %>%
-      dplyr::group_by(subid) %>%
-      dplyr::mutate(
-        dtshift = min(tsila$adtime) - dplyr::last(estdtt0),
-        truncated = 1 * (dtshift > 0),
-        estaget0 = estaget0 - max(0, dtshift),
-        estdtt0 = estdtt0 + max(0, dtshift)
-      ) %>%
-      dplyr::ungroup() %>%
-      dplyr::select(-dtshift)
-  } else {
-    tout$realigned <- 0
-  }
-
-  tout %>%
-    dplyr::select(-chronref) %>%
-    dplyr::relocate(dtageref, .after = ageref) %>%
-    dplyr::relocate(estdtt0, .after = estaget0)
+  tout
 }

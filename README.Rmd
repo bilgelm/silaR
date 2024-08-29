@@ -30,6 +30,17 @@ This algorithm may have applications in other areas where long-term population
 trajectories can be surmised from shorter longitudinal assessments of
 individuals.
 
+This implementation of SILA makes multiple modifications to the original method:
+- Instead of smoothing the rate vs. value function with LOESS, a generalized
+additive model with a log-link is used. Unlike LOESS, this ensures that the
+smoothed function will be non-negative.
+- Integration is performed using the `lsoda` ODE integrator.
+- The default approach for estimating time shifts is to use all visits per
+subject rather than the last visit only.
+- An initial check examines if biomarkers are globally increasing or decreasing
+with age, and tries to assess the accuracy of the monotonicity assumption
+(note: biomarkers decreasing with age are currently not allowed).
+
 ## Installation
 
 You can install the development version of silaR from [GitHub](https://github.com/) with:
@@ -49,9 +60,11 @@ library(silaR)
 
 # Train the SILA model
 df <- simulated_longitudinal_data
-res <- sila(df, dt = 0.25, val0 = 21, maxi = 200)
+df$val <- df$val
+val0 <- 21
+res <- illa(df, val0)
 
-resfit <- sila_estimate(res$tsila, df)
+resfit <- sila_estimate(res, align_event = "all")
 ```
 
 ```{r simdata, message=FALSE, warning=FALSE, out.width="50%"}
@@ -62,7 +75,7 @@ library(ggplot2)
 ggplot(df, aes(x = age, y = val, group = subid, color = factor(subid))) +
   geom_point() +
   geom_line() +
-  geom_hline(yintercept = 21, color = "black", linetype = "dashed") +
+  geom_hline(yintercept = val0, color = "black", linetype = "dashed") +
   xlab("Age (years)") +
   ylab("Value") +
   ggtitle("Simulated Input Data") +
@@ -74,16 +87,28 @@ ggplot(df, aes(x = age, y = val, group = subid, color = factor(subid))) +
 # plots showing the output from discrete rate sampling (i.e., rate vs. value)
 # and modeled value vs. time data.
 ggplot(res$tdrs, aes(x = val, y = rate)) +
-  geom_ribbon(aes(ymin = rate - ci, ymax = rate + ci), alpha = .3) +
-  geom_line() +
+  geom_point() +
+  geom_function(fun = res$val_to_rate) +
   xlab("Value") +
   ylab(expression(Delta * "Value per Year")) +
   ggtitle("Discrete Rate Sampling Curve") +
   theme_bw()
 
-ggplot(res$tsila, aes(x = adtime, y = val)) +
-  geom_line(aes(color = "Modeled curve")) +
-  geom_hline(aes(yintercept = 21, color = "threshold"), linetype = "dashed") +
+ggplot(
+  resfit,
+  aes(x = adtime, y = val)
+) +
+  geom_point(aes(color = factor(subid))) +
+  geom_line(aes(group = subid, color = factor(subid))) +
+  geom_hline(
+    aes(yintercept = val0, color = "threshold"),
+    linetype = "dashed",
+    color = "gray"
+  ) +
+  geom_function(
+    aes(color = "Modeled curve"),
+    fun = res$adtime_to_val, color = "black"
+  ) +
   xlab("Time from Threshold") +
   ylab("Value") +
   ggtitle(
@@ -91,36 +116,14 @@ ggplot(res$tsila, aes(x = adtime, y = val)) +
   ) +
   theme_bw() +
   theme(
-    legend.title = element_blank(),
-    legend.position = "inside",
-    legend.position.inside = c(.15, .85)
+    legend.position = "none"
   )
-```
-
-```{r valvstime, out.width="50%"}
-# value vs. time for all subjects
-ggplot(
-  resfit,
-  aes(x = estdtt0, y = val, group = subid, color = factor(subid))
-) +
-  geom_point() +
-  geom_line() +
-  geom_line(
-    data = res$tsila,
-    aes(x = adtime, y = val, group = NULL, color = NULL)
-  ) +
-  geom_hline(yintercept = 21, color = "black", linetype = "dashed") +
-  xlab("Estimated time to threshold (years)") +
-  ylab("Value") +
-  ggtitle("Data Aligned by Estimated Time to Threshold") +
-  theme_bw() +
-  theme(legend.position = "none")
 ```
 
 ```{r valvstimeone, fig.show="hold", out.width="50%"}
 # value vs. time for an individual case
 one_res <- resfit %>%
-  filter(estdtt0 > 1 & estdtt0 < 10) %>%
+  filter(adtime > 1 & adtime < 10) %>%
   group_by(subid) %>%
   mutate(nvis = n()) %>%
   ungroup() %>%
@@ -130,9 +133,9 @@ one_res <- resfit %>%
 ggplot(one_res, aes(x = age, y = val, group = subid)) +
   geom_point() +
   geom_line(aes(color = "Individual Case Observations")) +
-  geom_hline(yintercept = 21, color = "black", linetype = "dashed") +
+  geom_hline(yintercept = val0, color = "black", linetype = "dashed") +
   xlim(range(df$age)) +
-  ylim(range(res$tsila$val)) +
+  ylim(range(df$val)) +
   xlab("Age (years)") +
   ylab("Value") +
   ggtitle("Observations by Age") +
@@ -143,15 +146,15 @@ ggplot(one_res, aes(x = age, y = val, group = subid)) +
     legend.position.inside = c(.2, .9)
   )
 
-ggplot(one_res, aes(x = estdtt0, y = val, group = subid)) +
+ggplot(one_res, aes(x = adtime, y = val)) +
+  geom_hline(yintercept = val0, color = "black", linetype = "dashed") +
+  geom_function(
+    aes(color = "SILA Modeled Values"),
+    fun = res$adtime_to_val, color = "black"
+  ) +
   geom_point() +
   geom_line(aes(color = "Individual Case Observations")) +
-  geom_hline(yintercept = 21, color = "black", linetype = "dashed") +
-  geom_line(
-    data = res$tsila,
-    aes(x = adtime, y = val, group = NULL, color = "SILA Modeled Values")
-  ) +
-  xlim(range(res$tsila$adtime)) +
+  xlim(range(resfit$adtime)) +
   xlab("Estimated time to threshold (years)") +
   ylab("Value") +
   ggtitle("Observations by Estimated Time to Threshold") +
