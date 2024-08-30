@@ -105,7 +105,13 @@ sila_estimate <- function(
                 val ~ adtime_to_val_quick(age + shift),
                 data = .x,
                 start = list(
-                  shift = range(val_to_adtime_quick(.x$val) - .x$age)
+                  shift = pmin(
+                    pmax(
+                      range(val_to_adtime_quick(.x$val) - .x$age),
+                      min(adtime_limits) - min(.x$age)
+                    ),
+                    max(adtime_limits) - max(.x$age)
+                  )
                 ),
                 control = stats::nls.control(maxiter = 100),
                 algorithm = "grid-search"
