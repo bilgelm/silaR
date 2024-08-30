@@ -22,15 +22,18 @@ population trajectories can be surmised from shorter longitudinal
 assessments of individuals.
 
 This implementation of SILA makes multiple modifications to the original
-method: - Instead of smoothing the rate vs. value function with LOESS, a
-generalized additive model with a log-link is used. Unlike LOESS, this
-ensures that the smoothed function will be non-negative. - Integration
-is performed using the `lsoda` ODE integrator. - The default approach
-for estimating time shifts is to use all visits per subject rather than
-the last visit only. - An initial check examines if biomarkers are
-globally increasing or decreasing with age, and tries to assess the
-accuracy of the monotonicity assumption (note: biomarkers decreasing
-with age are currently not allowed).
+method:
+
+- Instead of smoothing the rate vs. value function with LOESS, a
+  generalized additive model with a log-link is used. Unlike LOESS, this
+  ensures that the smoothed function will be non-negative.
+- Integration is performed using the `lsoda` ODE integrator.
+- The default approach for estimating time shifts is to use all visits
+  per subject rather than the last visit only.
+- An initial check examines if biomarkers are globally increasing or
+  decreasing with age and tries to assess the accuracy of the
+  monotonicity assumption. Functions support working with decreasing
+  biomarkers.
 
 ## Installation
 
@@ -50,12 +53,13 @@ localize each subject on the estimated trajectory.
 ``` r
 library(silaR)
 
-# Train the SILA model
 df <- simulated_longitudinal_data
-df$val <- df$val
 val0 <- 21
+
+# Train the SILA model
 res <- illa(df, val0)
 
+# Get subject-level estimates using fitted SILA model
 resfit <- sila_estimate(res, align_event = "all")
 ```
 

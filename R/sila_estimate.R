@@ -44,6 +44,11 @@ sila_estimate <- function(
     df <- sila_res$df
   }
 
+  if (sila_res$is_decreasing) {
+    adtime_limits <- c(max(adtime_limits), min(adtime_limits))
+  } else {
+    adtime_limits <- c(min(adtime_limits), max(adtime_limits))
+  }
   adtimes <- seq(adtime_limits[1], adtime_limits[2], length.out = 1000)
   vals <- sila_res$adtime_to_val(adtimes)
 
@@ -65,9 +70,11 @@ sila_estimate <- function(
   for (rowid in seq_len(nrow(tout))) {
     .x <- tout$data[[rowid]]
     if (max(.x$val) < vals[2]) {
-      tout$shift[rowid] <- adtime_limits[1] - min(.x$age)
+      tout$shift[rowid] <- adtime_limits[1] -
+        ifelse(sila_res$is_decreasing, max(.x$age), min(.x$age))
     } else if (min(.x$val) > vals[length(vals) - 1]) {
-      tout$shift[rowid] <- adtime_limits[2] - max(.x$age)
+      tout$shift[rowid] <- adtime_limits[2] -
+        ifelse(sila_res$is_decreasing, min(.x$age), max(.x$age))
     } else {
       if (align_event %in% c("first", "last", "mean", "median")) {
         tout$shift[rowid] <- val_to_adtime_quick(
@@ -87,8 +94,8 @@ sila_estimate <- function(
                   maxiter = 1000, tol = 0.04, minFactor = 1e-16
                 ),
                 algorithm = "port",
-                lower = adtime_limits[1] - min(.x$age),
-                upper = adtime_limits[2] - max(.x$age)
+                lower = min(adtime_limits) - min(.x$age),
+                upper = max(adtime_limits) - max(.x$age)
               )
             )["shift"]
           },

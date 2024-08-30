@@ -55,13 +55,21 @@ illa <- function(df, val0) {
 
   is_decreasing <- check_decreasing(df)
   if (is_decreasing) {
-    stop("Decreasing function handling is not yet fully implemented")
-    df$val <- -df$val
-    val0 <- -val0
+    res_negatedval <- illa(df %>% dplyr::mutate(val = -.data$val), -val0)
+    res <- structure(
+      list(
+        df = df,
+        val0 = val0,
+        adtime_to_val = function(x) -res_negatedval$adtime_to_val(x),
+        val_to_rate = function(x) -res_negatedval$val_to_rate(-x),
+        tdrs = res_negatedval$tdrs %>%
+          dplyr::mutate(val = -.data$val, rate = -.data$rate),
+        is_decreasing = is_decreasing
+      ),
+      class = "sila"
+    )
+    return(res)
   }
-
-  df %>%
-    dplyr::group_by(.data$subid)
 
   t <- df %>%
     dplyr::arrange(.data$subid, .data$age) %>%
@@ -186,19 +194,12 @@ illa <- function(df, val0) {
     unname(y_all[match(x, x_all)])
   }
 
-  if (is_decreasing) {
-    val0 <- -val0
-    df$val <- -df$val
-    tdrs$val <- -tdrs$val
-    tdrs$rate <- -tdrs$rate
-  }
-
   structure(
     list(
       df = df,
       val0 = val0,
-      adtime_to_val = ifelse(is_decreasing, function(x) adtime_to_val(-x), adtime_to_val),
-      val_to_rate = ifelse(is_decreasing, function(x) -val_to_rate(-x), val_to_rate),
+      adtime_to_val = adtime_to_val,
+      val_to_rate = val_to_rate,
       tdrs = tdrs,
       is_decreasing = is_decreasing
     ),
