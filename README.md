@@ -42,7 +42,7 @@ You can install the development version of silaR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("bilgelm/silaR")
+devtools::install_github("bilgelm/silaR@ode-integrator")
 ```
 
 ## Example
