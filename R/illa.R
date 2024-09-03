@@ -84,7 +84,7 @@ illa <- function(df, val0) {
         .data$lmfit, ~ summary(.x)$coefficients["age", "Std. Error"]
       )
     ) %>%
-    dplyr::select(-data)
+    dplyr::select(-.data$data)
 
   tmod <- t %>%
     dplyr::filter(.data$nvis > 1 & .data$mrate < 100)
@@ -115,9 +115,9 @@ illa <- function(df, val0) {
       npos = sum(.data$rates > 0),
       ci = 1.96 * .data$ratestd / sqrt(.data$tot)
     ) %>%
-    dplyr::select(-ids) %>%
+    dplyr::select(-.data$ids) %>%
     dplyr::ungroup() %>%
-    dplyr::select(-rates, -vals) %>%
+    dplyr::select(-.data$rates, -.data$vals) %>%
     dplyr::filter(!is.na(.data$rate))
 
   # NOTE: monotonically decreasing biomarkers need to be negated before this

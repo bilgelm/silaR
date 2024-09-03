@@ -54,7 +54,7 @@ sila_estimate <- function(
 
   tout <- df %>%
     dplyr::arrange(.data$subid, .data$age) %>%
-    tidyr::nest(.by = subid, .key = "data") %>%
+    tidyr::nest(.by = .data$subid, .key = "data") %>%
     dplyr::mutate(shift = NA_real_)
 
   val_to_adtime_quick <- stats::approxfun(vals, adtimes, rule = 2)
@@ -124,7 +124,7 @@ sila_estimate <- function(
   }
 
   tout <- tout %>%
-    tidyr::unnest(cols = c(data)) %>%
+    tidyr::unnest(cols = c(.data$data)) %>%
     dplyr::mutate(
       adtime = .data$age + .data$shift
     )
