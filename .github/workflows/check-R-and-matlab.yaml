@@ -2,60 +2,16 @@
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
-    branches: [main, master]
+    branches: [main, ode-integrator]
   pull_request:
-    branches: [main, master]
+    branches: [main, ode-integrator]
 
-name: check-R-and-matlab
+name: check-R
 
 permissions: read-all
 
 jobs:
-  matlab-check:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-        with:
-            submodules: true
-
-      - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab@v2
-        with:
-          products: >
-            Statistics_and_Machine_Learning_Toolbox
-            Curve_Fitting_Toolbox
-
-      - name: Run ILLA tests
-        uses: matlab-actions/run-command@v2
-        with:
-          command: cd tests/testthat; test_illa
-
-      - name: Run SILA estimate tests
-        uses: matlab-actions/run-command@v2
-        with:
-          command: cd tests/testthat; test_sila_estimate
-
-      - name: Run SILA test
-        uses: matlab-actions/run-command@v2
-        with:
-          command: cd tests/testthat; test_sila
-
-      - name: Run demo
-        uses: matlab-actions/run-command@v2
-        with:
-          command: cd tests/testthat; test_demo
-
-      - name: Save matlab test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: matlab-results
-          path: tests/testthat/test_*_matlab_*.csv
-
   R-CMD-check:
-    needs: matlab-check
-
     runs-on: ${{ matrix.config.os }}
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
