@@ -71,23 +71,24 @@ illa <- function(df, val0) {
     return(res)
   }
 
-  t <- df %>%
+  tmod <- df %>%
     dplyr::arrange(.data$subid, .data$age) %>%
     dplyr::group_nest(.data$subid, .key = "data") %>%
     dplyr::mutate(
       min = map_dbl(.data$data, ~ min(.x$val)),
       max = map_dbl(.data$data, ~ max(.x$val)),
-      nvis = map_dbl(.data$data, ~ nrow(.x)),
+      nvis = map_dbl(.data$data, ~ nrow(.x))
+    ) %>%
+    dplyr::filter(.data$nvis > 1) %>%
+    dplyr::mutate(
       lmfit = purrr::map(.data$data, ~ stats::lm(val ~ age, data = .x)),
       mrate = map_dbl(.data$lmfit, ~ stats::coef(.x)[["age"]]),
       mrate_se = map_dbl(
         .data$lmfit, ~ summary(.x)$coefficients["age", "Std. Error"]
       )
     ) %>%
-    dplyr::select(-.data$data)
-
-  tmod <- t %>%
-    dplyr::filter(.data$nvis > 1 & .data$mrate < 100)
+    dplyr::select(-.data$data) %>%
+    dplyr::filter(abs(.data$mrate) < 100)
   # TODO: this should be abs(mrate); need warnings that there are steep changes
 
   n_qval <- 150 # TODO: number of query values should be a function parameter
