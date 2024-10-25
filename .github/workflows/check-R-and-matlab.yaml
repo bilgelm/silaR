@@ -93,8 +93,6 @@ jobs:
           upload-snapshots: true
           upload-results: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
-      
-      - run: R CMD INSTALL --build silaR
 
       - name: R package binaries
         uses: actions/upload-artifact@v4
@@ -103,3 +101,4 @@ jobs:
           path: |
             silaR*.zip
             silaR*.tgz
+            silaR*.tar.gz
