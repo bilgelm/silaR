@@ -37,6 +37,9 @@
 illa <- function(df, dt, val0, maxi, skern) {
   t <- df %>%
     dplyr::arrange(subid, age) %>%
+    dplyr::group_by(subid) %>% 
+    dplyr::filter(dplyr::n()>1) %>%
+    dplyr::ungroup() %>%
     dplyr::group_nest(subid, .key = "data") %>%
     dplyr::mutate(
       min = map_dbl(data, ~ min(.x$val)),
