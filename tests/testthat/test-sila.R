@@ -55,3 +55,23 @@ test_that("SILA runs", {
     system("rm test_sila_matlab_t*.csv")
   }
 })
+
+
+test_that("SILA handles single-obs participants", {
+  df_single <- tibble::tibble(
+    subid = c(1, 1, 1, 2, 2, 2, 3),
+    age = c(50, 60, 70, 50, 60, 70, 65),
+    val = c(2.14, 3.94, 6.04, 2.06, 4.04, 5.99, 8.15)
+  )
+
+  result <- sila(df_single, dt = 2, val0 = 1, maxi = 100)
+
+  tsila_df <- result$tsila
+  tdrs_df <- result$tdrs
+
+  # All modeled values in tsila should have nsubs >= 2
+  expect_true(all(tsila_df$nsubs >= 2))
+
+  # All rows in tdrs should have tot >= 2
+  expect_true(all(tdrs_df$tot >= 2))
+})

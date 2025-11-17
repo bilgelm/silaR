@@ -73,3 +73,4 @@ test_that("ILLA without smoothing runs without error", {
     system("rm test_illa_matlab_t*.csv")
   }
 })
+
