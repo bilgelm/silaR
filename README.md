@@ -5,9 +5,9 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/bilgelm/silaR/actions/workflows/check-R-and-matlab.yaml/badge.svg)](https://github.com/bilgelm/silaR/actions/workflows/check-R-and-matlab.yaml)
+[![R-CMD-check](https://github.com/Betthauser-Neuro-Lab/silaR/actions/workflows/check-R-and-matlab.yaml/badge.svg)](https://github.com/Betthauser-Neuro-Lab/silaR/actions/workflows/check-R-and-matlab.yaml)
 [![pre-commit.ci
-status](https://results.pre-commit.ci/badge/github/bilgelm/silaR/main.svg)](https://results.pre-commit.ci/latest/github/bilgelm/silaR/main)
+status](https://results.pre-commit.ci/badge/github/Betthauser-Neuro-Lab/silaR/main.svg)](https://results.pre-commit.ci/latest/github/Betthauser-Neuro-Lab/silaR/main)
 <!-- badges: end -->
 
 silaR is an R implementation of Sampled Iterative Local Approximation
@@ -28,7 +28,7 @@ You can install the development version of silaR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("bilgelm/silaR")
+devtools::install_github("Betthauser-Neuro-Lab/silaR")
 ```
 
 ## Example
